@@ -1,8 +1,8 @@
-import { Book } from "@/types/book";
+import { Book } from "@/types/global";
 import { Heart } from "lucide-react";
 import Image from "next/image";
 
-const BookCards = ({ image, title, price, disCountPrice }: Book) => {
+const BookCard = ({ image, title, price, disCountPrice }: Book) => {
   return (
     <div className="mt-6">
       <div className="group cursor-pointer relative transition-all duration-300 hover:shadow-[inset_0_0_0_1px_rgba(0,0,0,0),0_0_10px_rgba(0,0,0,0.25)] rounded-lg p-[15px] border border-gray-200">
@@ -35,4 +35,4 @@ const BookCards = ({ image, title, price, disCountPrice }: Book) => {
   );
 };
 
-export default BookCards;
+export default BookCard;

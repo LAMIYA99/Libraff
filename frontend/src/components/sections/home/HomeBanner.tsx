@@ -24,7 +24,7 @@ export default function BookSwiper() {
             "swiper-pagination-bullet-active !w-12 !h-2 !rounded-full !bg-gray-700",
         }}
         modules={[Pagination]}
-        className="mySwiper h-[500px] w-full"
+        className="mySwiper h-[300px] md:h-[500px] w-full"
       >
         {books.map((book, index) => (
           <SwiperSlide key={index} className="w-full">
