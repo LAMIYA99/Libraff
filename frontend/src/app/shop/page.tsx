@@ -1,12 +1,14 @@
 import ShopSorting from "@/components/features/ShopSorting";
 import Sidebar from "@/components/features/Sidebar";
 import BookCard from "@/components/shared/BookCard";
+import Breadcrumb from "@/components/ui/Breadcrumb";
 import PaginationButtons from "@/components/ui/PaginationButtons";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const Shop = () => {
   return (
     <div className="max-w-375 mx-auto px-5 py-12 flex flex-col gap-12">
+      <Breadcrumb />
       <div className="grid grid-cols-12">
         <div className="col-span-3">
           <Sidebar />
@@ -40,7 +42,10 @@ const Shop = () => {
             />
           </div>
           <div className="flex items-center justify-between mt-10">
-            <PaginationButtons title="Geri" prevIcon={<ArrowLeft size={15} />} />
+            <PaginationButtons
+              title="Geri"
+              prevIcon={<ArrowLeft size={15} />}
+            />
             <div className="flex items-center justify-center gap-2">
               <PaginationButtons pageCount="1" />
               <PaginationButtons pageCount="2" />
@@ -49,7 +54,10 @@ const Shop = () => {
               <PaginationButtons pageCount="5" />
               <PaginationButtons pageCount="6" />
             </div>
-            <PaginationButtons title="İrəli" nextIcon={<ArrowRight size={15} />} />
+            <PaginationButtons
+              title="İrəli"
+              nextIcon={<ArrowRight size={15} />}
+            />
           </div>
         </div>
       </div>

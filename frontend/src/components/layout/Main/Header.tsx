@@ -33,14 +33,17 @@ const Header = () => {
                   <Menu className="w-7 h-7" />
                 )}
               </button>
+
               <div className="w-[100px] relative h-[30px]">
-                <Image
-                  src="https://www.libraff.az/images/logos/1305/logo_b1x3-5c.png"
-                  alt="logo"
-                  fill
-                  priority
-                  className="object-contain"
-                />
+                <Link href="/">
+                  <Image
+                    src="https://www.libraff.az/images/logos/1305/logo_b1x3-5c.png"
+                    alt="logo"
+                    fill
+                    priority
+                    className="object-contain"
+                  />
+                </Link>
               </div>
             </div>
             <div className="flex items-center gap-3">
