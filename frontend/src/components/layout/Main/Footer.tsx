@@ -6,7 +6,6 @@ const Footer = () => {
     <footer className="bg-white pt-16 pb-8 border-t border-gray-100">
       <div className="max-w-[1500px] mx-auto px-[20px]">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          {/* Dynamic Columns */}
           {footerLinks.map((column, index) => (
             <div key={index} className="flex flex-col gap-4">
               <h3 className="text-[#14151A] font-bold text-lg font-nunito">
@@ -27,7 +26,6 @@ const Footer = () => {
             </div>
           ))}
 
-          {/* Contact Column */}
           <div className="flex flex-col gap-4">
             <h3 className="text-[#14151A] font-bold text-lg font-nunito">
               Əlaqə
@@ -59,7 +57,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Copyright */}
         <div className="pt-8 border-t border-gray-100 mt-8">
           <p className="text-[#14151A] text-sm font-nunito">
             &copy; 2017 - 2026 Libraff.
