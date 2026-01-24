@@ -2,7 +2,6 @@
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
-
 import "swiper/css";
 import "swiper/css/pagination";
 import Image from "next/image";
@@ -24,7 +23,7 @@ export default function BookSwiper() {
             "swiper-pagination-bullet-active !w-12 !h-2 !rounded-full !bg-gray-700",
         }}
         modules={[Pagination]}
-        className="mySwiper h-[300px] md:h-[500px] w-full"
+        className="mySwiper h-75 md:h-125 w-full"
       >
         {books.map((book, index) => (
           <SwiperSlide key={index} className="w-full">
