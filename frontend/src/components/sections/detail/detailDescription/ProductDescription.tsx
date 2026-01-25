@@ -1,5 +1,8 @@
 "use client";
 import { useState } from "react";
+import Description from "./Description";
+import Features from "./Features";
+import Reviews from "./Reviews";
 
 export default function ProductDescription() {
   const [activeTab, setActiveTab] = useState<"desc" | "features" | "reviews">(
@@ -7,9 +10,9 @@ export default function ProductDescription() {
   );
 
   return (
-    <div className="w-full border-t">
-      {/* Tabs Header */}
-      <div className="flex items-center gap-10 px-6 md:px-12 border-b text-sm md:text-base font-medium">
+    <div className="w-full  flex items-center justify-center flex-col mt-10">
+
+      <div className=" gap-[16rem] px-6 md:px-12 border-b-2 border-[#eee] w-full flex items-center justify-center text-[20.8px] md:text-[20.8px] font-medium">
         <button
           onClick={() => setActiveTab("desc")}
           className={`py-4 relative transition ${
@@ -56,8 +59,8 @@ export default function ProductDescription() {
         </button>
       </div>
 
-      {/* Tabs Content */}
-      <div className="px-6 md:px-12 py-10">
+   
+      <div className="px-6 md:px-12  py-10 w-[100ch]">
         {activeTab === "desc" && <Description />}
         {activeTab === "features" && <Features />}
         {activeTab === "reviews" && <Reviews />}
