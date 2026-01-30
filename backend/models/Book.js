@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const reviewSchema = new mongoose.Schema(
   {
     user: {
-      type: String, // Can be ObjectId if Users are implemented
+      type: String, 
       required: true,
     },
     rating: {
@@ -51,17 +51,16 @@ const bookSchema = new mongoose.Schema(
       required: true,
     },
     category: {
-      // For "her sectiona uygun" (e.g., "Fiction", "Science", "Bestsellers")
       type: String,
       required: true,
     },
     features: {
-      binding: { type: String, required: true }, // Cild (Hardcover, Softcover)
-      language: { type: String, required: true }, // Dil
-      author: { type: String, required: true }, // Müəllif
-      publisher: { type: String, required: true }, // Nəşriyyat
-      pageCount: { type: Number, required: true }, // Səhifə sayı
-      age: { type: String, required: true }, // Yaş (e.g., "12+")
+      binding: { type: String, required: true },
+      language: { type: String, required: true },
+      author: { type: String, required: true },
+      publisher: { type: String, required: true },
+      pageCount: { type: Number, required: true },
+      age: { type: String, required: true },
     },
     reviews: [reviewSchema],
     rating: {

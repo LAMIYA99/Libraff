@@ -1,31 +1,29 @@
 const Book = require("../models/Book");
 
-// @desc    Fetch all books
-// @route   GET /api/books
-// @access  Public
+
 const getBooks = async (req, res) => {
   try {
-    const keyword = req.query.keyword
-      ? {
-          title: {
-            $regex: req.query.keyword,
-            $options: "i",
-          },
-        }
-      : {};
+    let query = {};
 
-    const category = req.query.category ? { category: req.query.category } : {};
+    if (req.query.keyword) {
+      query.title = {
+        $regex: req.query.keyword,
+        $options: "i", 
+      };
+    }
 
-    const books = await Book.find({ ...keyword, ...category });
+    if (req.query.category) {
+      query.category = req.query.category;
+    }
+
+    const books = await Book.find(query);
     res.json(books);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Fetch single book
-// @route   GET /api/books/:id
-// @access  Public
+
 const getBookById = async (req, res) => {
   try {
     const book = await Book.findById(req.params.id);
@@ -40,9 +38,7 @@ const getBookById = async (req, res) => {
   }
 };
 
-// @desc    Create a book
-// @route   POST /api/books
-// @access  Private/Admin (Public for now)
+
 const createBook = async (req, res) => {
   try {
     const {
@@ -74,12 +70,9 @@ const createBook = async (req, res) => {
   }
 };
 
-// @desc    Create new review
-// @route   POST /api/books/:id/reviews
-// @access  Public
-const createBookReview = async (req, res) => {
-  const { rating, comment, user: userName } = req.body; // Assuming strictly passed fields for now
 
+const createBookReview = async (req, res) => {
+  const { rating, comment, user: userName } = req.body; 
   try {
     const book = await Book.findById(req.params.id);
 
@@ -93,9 +86,13 @@ const createBookReview = async (req, res) => {
       book.reviews.push(review);
 
       book.numReviews = book.reviews.length;
-      book.rating =
-        book.reviews.reduce((acc, item) => item.rating + acc, 0) /
-        book.reviews.length;
+
+      
+      let totalRating = 0;
+      for (let i = 0; i < book.reviews.length; i++) {
+        totalRating += book.reviews[i].rating;
+      }
+      book.rating = totalRating / book.reviews.length;
 
       await book.save();
       res.status(201).json({ message: "Review added" });
