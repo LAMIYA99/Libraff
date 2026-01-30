@@ -1,9 +1,27 @@
 export type Book = {
+  id: string;
+  title: string;
+  author: string;
+  category: string;
+  price: number;
+  stock: number;
+  status: string;
+  isbn?: string;
   image?: string;
-  title?: string;
-  price?: number;
-  disCountPrice?: number;
 };
+
+export type Order = {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  address: string;
+  items: any[];
+  totalPrice: number;
+  status: string;
+  createdAt: string;
+};
+
 export type PicksCardProps = {
   image: string;
 };
@@ -11,12 +29,12 @@ export type PicksCardProps = {
 export type SectionHeadingProps = {
   title: string;
   highlight?: string;
-  align?: "left" | "center" | "right";
+  align?: string;
 };
 
 export type PaginationButtonsProps = {
   title?: string;
-  prevIcon?: React.ReactNode;
-  nextIcon?: React.ReactNode;
+  prevIcon?: any;
+  nextIcon?: any;
   pageCount?: string;
 };

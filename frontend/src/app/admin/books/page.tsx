@@ -2,88 +2,79 @@
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "react-hot-toast";
 import api from "@/services/api";
+import Image from "next/image";
 import {
   Search,
-  Edit,
+  Edit2,
   Trash2,
   Plus,
   X,
-  AlertCircle,
-  Check,
+  Upload,
   Loader2,
+  Filter,
 } from "lucide-react";
-
-interface Book {
-  id: string;
-  title: string;
-  author: string;
-  category: string;
-  price: number;
-  stock: number;
-  status: "Aktiv" | "Qeyri-aktiv";
-  isbn?: string;
-  publisher?: string;
-  year?: number;
-  coverColor?: string;
-}
 
 export default function BooksPage() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingBook, setEditingBook] = useState<Book | null>(null);
-  const [formData, setFormData] = useState<Partial<Book>>({
+  const [editingBook, setEditingBook] = useState<any>(null);
+  const [formData, setFormData] = useState<any>({
     status: "Aktiv",
   });
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const { data: books = [], isLoading } = useQuery<Book[]>({
+  const { data: books = [], isLoading } = useQuery<any>({
     queryKey: ["admin-books"],
     queryFn: () => api.get("/books"),
-
   });
 
   const bookMutation = useMutation({
-    mutationFn: (newBook: Partial<Book>) => {
-      if (editingBook) {
-        return api.put(`/books/${editingBook.id}`, newBook);
-      }
-      return api.post("/books", newBook);
+    mutationFn: (data: any) => {
+      if (editingBook) return api.put(`/books/${editingBook.id}`, data);
+      return api.post("/books", data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-books"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-books"] } as any);
       toast.success(editingBook ? "Kitab yeniləndi" : "Kitab əlavə edildi");
-      handleCloseModal();
+      closeModal();
     },
-    onError: () => {
-      toast.error("Xəta baş verdi");
-    },
+    onError: () => toast.error("Xəta baş verdi"),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => api.delete(`/books/${id}`),
+    mutationFn: (id: any) => api.delete(`/books/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-books"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-books"] } as any);
       toast.success("Kitab silindi");
-      setDeleteConfirm(null);
-    },
-    onError: () => {
-      toast.error("Silinmə zamanı xəta baş verdi");
     },
   });
 
-  const filteredBooks = books.filter(
-    (book) =>
-      book.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.author?.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const handleImageUpload = async (e: any) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploading(true);
+    const data = new FormData();
+    data.append("image", file);
+    try {
+      const res: any = await api.post("/upload", data);
+      setFormData({ ...formData, image: res.url });
+    } catch (error) {
+      toast.error("Yükləmə xətası");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
-  const handleOpenModal = (book?: Book) => {
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingBook(null);
+    setFormData({ status: "Aktiv" });
+  };
+
+  const openModal = (book?: any) => {
     if (book) {
       setEditingBook(book);
       setFormData(book);
@@ -94,362 +85,244 @@ export default function BooksPage() {
     setIsModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingBook(null);
-    setFormData({});
-  };
+  const filteredBooks = Array.isArray(books)
+    ? books.filter(
+        (book: any) =>
+          book.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          book.author?.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    : [];
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]:
-        name === "price" || name === "stock" || name === "year"
-          ? parseFloat(value)
-          : value,
-    });
-  };
-
-  const handleSaveBook = () => {
-    if (!formData.title || !formData.author || !formData.price) {
-      toast.error("Zəhmət olmasa bütün məcburi sahələri doldurun");
-      return;
-    }
-    bookMutation.mutate(formData);
-  };
-
-  if (isLoading) {
+  if (isLoading)
     return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
+      <div className="p-10 text-center text-sm text-gray-500">Yüklənir...</div>
     );
-  }
 
   return (
-    <>
-      <div className="p-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Kitablar</h1>
-          <p className="text-muted-foreground">
-            {books.length} kitab - {filteredBooks.length} göstərilən
+    <div className="p-6 max-w-7xl mx-auto font-sans">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Kitablar</h1>
+          <p className="text-sm text-gray-500">
+            Kataloqdakı kitabların siyahısı
           </p>
         </div>
+        <button
+          onClick={() => openModal()}
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+        >
+          <Plus size={18} /> Yeni Kitab
+        </button>
+      </div>
 
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              placeholder="Kitab adı və ya müəllif axtarın..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-card border-border"
-            />
-          </div>
-          <Button
-            onClick={() => handleOpenModal()}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 w-full md:w-auto"
-          >
-            <Plus className="w-5 h-5" />
-            Yeni Kitab
-          </Button>
+      <div className="bg-white border border-gray-200 rounded-xl p-3 mb-6 flex items-center gap-4 shadow-sm">
+        <div className="relative flex-1">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            size={18}
+          />
+          <input
+            type="text"
+            placeholder="Axtarış..."
+            className="w-full pl-10 pr-4 py-2 bg-gray-50 border-0 rounded-lg text-sm outline-none focus:ring-1 focus:ring-red-500"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
+        <button className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg">
+          <Filter size={18} /> Filtr
+        </button>
+      </div>
 
-        {filteredBooks.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredBooks.map((book) => (
-              <div key={book.id} className="group">
-                <Card className="overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-card">
-                  <div
-                    className={`h-56 bg-linear-to-br ${book.coverColor || "from-gray-600 to-gray-400"} relative overflow-hidden flex items-center justify-center`}
-                  >
-                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="relative z-10 text-center px-6">
-                      <h3 className="text-xl font-bold text-white mb-2 line-clamp-3">
-                        {book.title}
-                      </h3>
-                      <p className="text-white/80 text-sm">{book.author}</p>
-                    </div>
-                  </div>
-
-                  <div className="p-4 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold">
-                          {book.category}
-                        </p>
-                        <p className="text-lg font-bold text-foreground mt-1">
-                          ₼{book.price.toFixed(2)}
-                        </p>
-                      </div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${
-                          book.status === "Aktiv"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {book.status === "Aktiv" ? (
-                          <Check className="w-3 h-3" />
-                        ) : (
-                          <AlertCircle className="w-3 h-3" />
-                        )}
-                        {book.status}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Ehtiyyat:</span>
-                      <span className="font-semibold text-foreground">
-                        {book.stock} ədəd
-                      </span>
-                    </div>
-
-                    <div className="flex gap-2 pt-3 border-t border-border">
-                      <Button
-                        onClick={() => handleOpenModal(book)}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 gap-2 border-border hover:bg-secondary"
-                      >
-                        <Edit className="w-4 h-4" />
-                        Redaktə
-                      </Button>
-                      {deleteConfirm === book.id ? (
-                        <div className="flex-1 flex gap-2">
-                          <Button
-                            onClick={() => deleteMutation.mutate(book.id)}
-                            size="sm"
-                            className="flex-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                            disabled={deleteMutation.isPending}
-                          >
-                            Bəli
-                          </Button>
-                          <Button
-                            onClick={() => setDeleteConfirm(null)}
-                            size="sm"
-                            variant="outline"
-                            className="flex-1"
-                          >
-                            Xeyr
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button
-                          onClick={() => setDeleteConfirm(book.id)}
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 gap-2 border-destructive/50 hover:bg-destructive/10 text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Sil
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {filteredBooks.map((book: any) => (
+          <div
+            key={book.id}
+            className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all group"
+          >
+            <div className="aspect-4/5 relative bg-gray-50">
+              {book.image ? (
+                <Image
+                  src={book.image}
+                  alt={book.title}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-gray-300 bg-gray-50">
+                  <Plus size={32} />
+                </div>
+              )}
+              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                <button
+                  onClick={() => openModal(book)}
+                  className="p-2 bg-white shadow rounded-lg text-gray-600 hover:text-red-600"
+                >
+                  <Edit2 size={16} />
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm("Silmək istəyirsiniz?"))
+                      deleteMutation.mutate(book.id);
+                  }}
+                  className="p-2 bg-white shadow rounded-lg text-gray-600 hover:text-red-600"
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
-            ))}
+            </div>
+            <div className="p-4">
+              <div className="flex items-start justify-between mb-1">
+                <h3 className="text-sm font-bold text-gray-900 line-clamp-1">
+                  {book.title}
+                </h3>
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                    book.status === "Aktiv"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  {book.status}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mb-3">{book.author}</p>
+              <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                <span className="text-sm font-bold text-gray-900">
+                  ₼{book.price}
+                </span>
+                <span className="text-[10px] text-gray-400">
+                  Stok: {book.stock}
+                </span>
+              </div>
+            </div>
           </div>
-        ) : (
-          <Card className="border-0 shadow-lg p-12 text-center bg-card">
-            <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Kitab tapılmadı
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              "{searchTerm}" ilə əlaqəli kitab yoxdur
-            </p>
-            <Button
-              onClick={() => {
-                setSearchTerm("");
-              }}
-              variant="outline"
-            >
-              Axtarışı Təmizlə
-            </Button>
-          </Card>
-        )}
+        ))}
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-lg border-0 shadow-2xl bg-card max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-border flex items-center justify-between sticky top-0 bg-card">
-              <h2 className="text-2xl font-bold text-foreground">
-                {editingBook ? "Kitab Redaktə Et" : "Yeni Kitab Əlavə Et"}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="font-bold text-gray-900">
+                {editingBook ? "Redaktə et" : "Yeni Kitab"}
               </h2>
               <button
-                onClick={handleCloseModal}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                title="Close"
+                onClick={closeModal}
+                className="text-gray-400 hover:text-gray-900"
               >
-                <X className="w-6 h-6" />
+                <X size={20} />
               </button>
             </div>
-
             <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-2">
-                  Kitab Adı *
-                </label>
-                <Input
-                  name="title"
-                  placeholder="Kitabın adını daxil edin"
-                  value={formData.title || ""}
-                  onChange={handleInputChange}
-                  className="bg-secondary border-border"
+              <div className="flex gap-4">
+                <div className="w-20 h-24 bg-gray-50 border rounded-lg relative overflow-hidden flex items-center justify-center">
+                  {formData.image ? (
+                    <img
+                      src={formData.image}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Upload size={20} className="text-gray-300" />
+                  )}
+                  {isUploading && (
+                    <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+                      <Loader2
+                        className="animate-spin text-red-500"
+                        size={16}
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <input
+                    type="text"
+                    className="w-full text-xs p-2 border border-gray-200 rounded-lg outline-none focus:border-red-500"
+                    value={formData.image || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, image: e.target.value })
+                    }
+                    placeholder="Şəkil URL"
+                  />
+                  <label className="block w-full text-center py-1.5 border border-gray-200 rounded-lg text-xs font-bold cursor-pointer hover:bg-gray-50">
+                    Fayl yüklə
+                    <input
+                      type="file"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                  </label>
+                </div>
+              </div>
+              <input
+                placeholder="Kitabın adı"
+                className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500"
+                value={formData.title || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  placeholder="Müəllif"
+                  className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500"
+                  value={formData.author || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, author: e.target.value })
+                  }
+                />
+                <select
+                  className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none"
+                  value={formData.category || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
+                >
+                  <option value="">Kateqoriya</option>
+                  <option value="Bədii">Bədii</option>
+                  <option value="Roman">Roman</option>
+                  <option value="Elmi">Elmi</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  type="number"
+                  placeholder="Qiymət"
+                  className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500"
+                  value={formData.price || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, price: e.target.value })
+                  }
+                />
+                <input
+                  type="number"
+                  placeholder="Stok"
+                  className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500"
+                  value={formData.stock || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, stock: e.target.value })
+                  }
                 />
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-foreground mb-2">
-                    Müəllif *
-                  </label>
-                  <Input
-                    name="author"
-                    placeholder="Müəllifin adı"
-                    value={formData.author || ""}
-                    onChange={handleInputChange}
-                    className="bg-secondary border-border"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-foreground mb-2">
-                    Kateqoriya
-                  </label>
-                  <select
-                    name="category"
-                    value={formData.category || ""}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 rounded-md bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="">Seçin</option>
-                    <option value="Bədii ədəbiyyat">Bədii ədəbiyyat</option>
-                    <option value="Romanlar">Romanlar</option>
-                    <option value="Elmi ədəbiyyat">Elmi ədəbiyyat</option>
-                    <option value="Uşaq ədəbiyyatı">Uşaq ədəbiyyatı</option>
-                    <option value="Biznes">Biznes</option>
-                    <option value="Tarix">Tarix</option>
-                    <option value="Digər">Digər</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-foreground mb-2">
-                    Qiymət (₼) *
-                  </label>
-                  <Input
-                    name="price"
-                    type="number"
-                    placeholder="0.00"
-                    value={formData.price || ""}
-                    onChange={handleInputChange}
-                    step="0.01"
-                    className="bg-secondary border-border"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-foreground mb-2">
-                    Ehtiyyat (ədəd)
-                  </label>
-                  <Input
-                    name="stock"
-                    type="number"
-                    placeholder="0"
-                    value={formData.stock || ""}
-                    onChange={handleInputChange}
-                    className="bg-secondary border-border"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-foreground mb-2">
-                    ISBN
-                  </label>
-                  <Input
-                    name="isbn"
-                    placeholder="978-..."
-                    value={formData.isbn || ""}
-                    onChange={handleInputChange}
-                    className="bg-secondary border-border"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-foreground mb-2">
-                    Nəşriyyat
-                  </label>
-                  <Input
-                    name="publisher"
-                    placeholder="Nəşriyyat adı"
-                    value={formData.publisher || ""}
-                    onChange={handleInputChange}
-                    className="bg-secondary border-border"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-foreground mb-2">
-                    Nəşr Tarixi
-                  </label>
-                  <Input
-                    name="year"
-                    type="number"
-                    placeholder="2024"
-                    value={formData.year || ""}
-                    onChange={handleInputChange}
-                    className="bg-secondary border-border"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-foreground mb-2">
-                    Status
-                  </label>
-                  <select
-                    name="status"
-                    value={formData.status || "Aktiv"}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 rounded-md bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="Aktiv">Aktiv</option>
-                    <option value="Qeyri-aktiv">Qeyri-aktiv</option>
-                  </select>
-                </div>
-              </div>
             </div>
-
-            <div className="p-6 border-t border-border flex gap-3 sticky bottom-0 bg-card">
-              <Button
-                onClick={handleCloseModal}
-                variant="outline"
-                className="flex-1 border-border bg-transparent"
+            <div className="px-6 py-4 bg-gray-50 flex justify-end gap-2">
+              <button
+                onClick={closeModal}
+                className="px-4 py-2 text-sm text-gray-500"
               >
-                Ləğv Et
-              </Button>
-              <Button
-                onClick={handleSaveBook}
-                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
-                disabled={bookMutation.isPending}
+                Ləğv et
+              </button>
+              <button
+                onClick={() => bookMutation.mutate(formData)}
+                className="bg-red-600 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-sm"
               >
-                {bookMutation.isPending ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                ) : null}
-                {editingBook ? "Yenilə" : "Əlavə Et"}
-              </Button>
+                Yadda saxla
+              </button>
             </div>
-          </Card>
+          </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

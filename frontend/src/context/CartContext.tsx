@@ -3,7 +3,6 @@ import api from "@/services/api";
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 
-
 const CartContext = createContext<any>(null);
 
 export const CartProvider = ({ children }: any) => {
@@ -16,7 +15,7 @@ export const CartProvider = ({ children }: any) => {
       const token = localStorage.getItem("userToken");
       if (token) {
         try {
-          const data = await api.getData("/cart");
+          const data = await api.get("/cart");
           setCart(data || []);
         } catch (err) {
           console.error("Cart fetch error:", err);
@@ -32,7 +31,7 @@ export const CartProvider = ({ children }: any) => {
       if (token && cart.length >= 0 && !isSyncing) {
         try {
           setIsSyncing(true);
-          await api.PostData("/cart/sync", { cartItems: cart });
+          await api.post("/cart/sync", { cartItems: cart });
         } catch (err) {
           console.error("Cart sync error:", err);
         } finally {

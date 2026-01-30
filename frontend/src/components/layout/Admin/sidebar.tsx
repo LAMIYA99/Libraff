@@ -7,99 +7,92 @@ import {
   BookOpen,
   ShoppingCart,
   LogOut,
-  Menu,
+  ChevronLeft,
+  ChevronRight,
+  Settings,
+  Bell,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { useState } from "react";
+import Image from "next/image";
 
-interface SidebarProps {
-  className?: string;
-}
-
-export function Sidebar({ className }: SidebarProps) {
+export function Sidebar() {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const routes = [
-    {
-      name: "Dashboard",
-      href: "/admin",
-      icon: LayoutDashboard,
-      active: pathname === "/admin",
-    },
-    {
-      name: "Kitablar",
-      href: "/admin/books",
-      icon: BookOpen,
-      active: pathname === "/admin/books",
-    },
-    {
-      name: "Sifarişlər",
-      href: "/admin/orders",
-      icon: ShoppingCart,
-      active: pathname === "/admin/orders",
-    },
+  const menuItems = [
+    { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { name: "Kitablar", href: "/admin/books", icon: BookOpen },
+    { name: "Sifarişlər", href: "/admin/orders", icon: ShoppingCart },
   ];
 
   return (
     <div
-      className={cn(
-        "h-screen bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-300",
-        collapsed ? "w-20" : "w-64",
-        className,
-      )}
+      className={`h-screen bg-white border-r border-gray-100 flex flex-col transition-all duration-300 relative ${
+        isCollapsed ? "w-20" : "w-64"
+      }`}
     >
-      <div className="flex items-center justify-between h-16 px-4 border-b border-sidebar-border">
-        {!collapsed && (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-sidebar-primary-foreground" />
-            </div>
-            <span className="font-bold text-sm">Libraff</span>
+      {/* Logo Area */}
+      <div className="h-20 flex items-center px-6 mb-4">
+        <Link href="/" className="flex items-center gap-3 overflow-hidden">
+          <div className="w-9 h-9 bg-red-600 rounded-lg flex items-center justify-center shrink-0 shadow-sm">
+            <BookOpen className="w-5 h-5 text-white" />
           </div>
-        )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setCollapsed(!collapsed)}
-          className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-        >
-          <Menu className="w-4 h-4" />
-        </Button>
+          {!isCollapsed && (
+            <span className="font-bold text-lg text-gray-900 tracking-tight whitespace-nowrap">
+              LIBRAFF <span className="text-gray-400 font-normal">ADMIN</span>
+            </span>
+          )}
+        </Link>
       </div>
 
-      <nav className="flex flex-col gap-2 p-4">
-        {routes.map((route) => {
-          const Icon = route.icon;
-          return (
-            <Link key={route.href} href={route.href}>
-              <Button
-                variant={route.active ? "default" : "ghost"}
-                className={cn(
-                  "w-full justify-start gap-3",
-                  route.active
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                )}
+      {/* Navigation */}
+      <div className="px-3 flex-1">
+        <nav className="space-y-1">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group ${
+                  isActive
+                    ? "bg-red-50 text-red-600"
+                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                }`}
               >
-                <Icon className="w-5 h-5 shrink-0" />
-                {!collapsed && <span>{route.name}</span>}
-              </Button>
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-sidebar-border">
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-        >
-          <LogOut className="w-5 h-5 shrink-0" />
-          {!collapsed && <span className="text-sm">Çıxış</span>}
-        </Button>
+                <Icon
+                  size={20}
+                  className={
+                    isActive
+                      ? "text-red-600"
+                      : "text-gray-400 group-hover:text-gray-900"
+                  }
+                />
+                {!isCollapsed && (
+                  <span className="text-sm font-medium">{item.name}</span>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
       </div>
+
+      {/* Bottom Actions */}
+      <div className="p-3 border-t border-gray-50 mt-auto">
+        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:bg-gray-50 hover:text-red-600 transition-all group">
+          <LogOut size={20} className="group-hover:text-red-600" />
+          {!isCollapsed && <span className="text-sm font-medium">Çıxış</span>}
+        </button>
+      </div>
+
+      {/* Toggle Button */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="absolute -right-3 top-20 w-6 h-6 bg-white border border-gray-100 rounded-full flex items-center justify-center text-gray-400 hover:text-red-600 shadow-sm z-50 transition-colors"
+      >
+        {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+      </button>
     </div>
   );
 }
