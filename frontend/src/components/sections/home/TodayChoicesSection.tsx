@@ -11,7 +11,7 @@ import { Book } from "@/types/global";
 const TodayChoicesSection = () => {
   const { data: books = [], isLoading } = useQuery<Book[]>({
     queryKey: ["today-choices"],
-    queryFn: () => api.get("/books?limit=6"), // Backend-də limit və ya filter məntiqi olduğunu fərz edirik
+    queryFn: () => api.get("/books?limit=6"),
   });
 
   return (
@@ -26,14 +26,15 @@ const TodayChoicesSection = () => {
         ) : books.length > 0 ? (
           books.map((book: any) => (
             <BookCard
-              key={book.id}
+              key={book.id || book._id}
+              id={book.id || book._id}
               image={
                 book.image ||
                 "https://www.libraff.az/images/thumbnails/400/600/from_1c/f8a032c0-5053-11eb-a4d2-503eaa128442_1_1759181531.jpg.webp"
               }
               title={book.title}
               price={book.price}
-              disCountPrice={book.disCountPrice}
+              discountPrice={book.discountPrice}
             />
           ))
         ) : (

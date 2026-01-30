@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const reviewSchema = new mongoose.Schema(
   {
     user: {
-      type: String, 
+      type: String,
       required: true,
     },
     rating: {
@@ -48,29 +48,25 @@ const bookSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      required: true,
     },
     category: {
       type: String,
-      required: true,
     },
     features: {
-      binding: { type: String, required: true },
-      language: { type: String, required: true },
-      author: { type: String, required: true },
-      publisher: { type: String, required: true },
-      pageCount: { type: Number, required: true },
-      age: { type: String, required: true },
+      binding: { type: String },
+      language: { type: String },
+      author: { type: String },
+      publisher: { type: String },
+      pageCount: { type: Number },
+      age: { type: String },
     },
     reviews: [reviewSchema],
     rating: {
       type: Number,
-      required: true,
       default: 0,
     },
     numReviews: {
       type: Number,
-      required: true,
       default: 0,
     },
   },

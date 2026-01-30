@@ -20,8 +20,24 @@ export default function BooksPage() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteConfirmationId, setDeleteConfirmationId] = useState<any>(null);
   const [editingBook, setEditingBook] = useState<any>(null);
   const [formData, setFormData] = useState<any>({
+    code: "",
+    title: "",
+    price: 0,
+    discountPrice: 0,
+    image: "",
+    description: "",
+    category: "",
+    features: {
+      binding: "",
+      language: "",
+      author: "",
+      publisher: "",
+      pageCount: 0,
+      age: "",
+    },
     status: "Aktiv",
   });
   const [isUploading, setIsUploading] = useState(false);
@@ -33,7 +49,8 @@ export default function BooksPage() {
 
   const bookMutation = useMutation({
     mutationFn: (data: any) => {
-      if (editingBook) return api.put(`/books/${editingBook.id}`, data);
+      const id = editingBook?._id || editingBook?.id;
+      if (editingBook) return api.put(`/books/${id}`, data);
       return api.post("/books", data);
     },
     onSuccess: () => {
@@ -71,7 +88,24 @@ export default function BooksPage() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingBook(null);
-    setFormData({ status: "Aktiv" });
+    setFormData({
+      code: "",
+      title: "",
+      price: 0,
+      discountPrice: 0,
+      image: "",
+      description: "",
+      category: "",
+      features: {
+        binding: "",
+        language: "",
+        author: "",
+        publisher: "",
+        pageCount: 0,
+        age: "",
+      },
+      status: "Aktiv",
+    });
   };
 
   const openModal = (book?: any) => {
@@ -80,7 +114,24 @@ export default function BooksPage() {
       setFormData(book);
     } else {
       setEditingBook(null);
-      setFormData({ status: "Aktiv" });
+      setFormData({
+        code: "",
+        title: "",
+        price: 0,
+        discountPrice: 0,
+        image: "",
+        description: "",
+        category: "",
+        features: {
+          binding: "",
+          language: "",
+          author: "",
+          publisher: "",
+          pageCount: 0,
+          age: "",
+        },
+        status: "Aktiv",
+      });
     }
     setIsModalOpen(true);
   };
@@ -89,7 +140,9 @@ export default function BooksPage() {
     ? books.filter(
         (book: any) =>
           book.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          book.author?.toLowerCase().includes(searchTerm.toLowerCase()),
+          book.features?.author
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()),
       )
     : [];
 
@@ -137,11 +190,13 @@ export default function BooksPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredBooks.map((book: any) => (
           <div
-            key={book.id}
+            key={book._id || book.id}
             className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all group"
           >
             <div className="aspect-4/5 relative bg-gray-50">
-              {book.image ? (
+              {book.image &&
+              (book.image.startsWith("http") ||
+                book.image.startsWith("https")) ? (
                 <Image
                   src={book.image}
                   alt={book.title}
@@ -162,8 +217,7 @@ export default function BooksPage() {
                 </button>
                 <button
                   onClick={() => {
-                    if (confirm("Silmək istəyirsiniz?"))
-                      deleteMutation.mutate(book.id);
+                    setDeleteConfirmationId(book._id || book.id);
                   }}
                   className="p-2 bg-white shadow rounded-lg text-gray-600 hover:text-red-600"
                 >
@@ -186,14 +240,19 @@ export default function BooksPage() {
                   {book.status}
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mb-3">{book.author}</p>
+              <p className="text-xs text-gray-500 mb-3">
+                {book.features?.author}
+              </p>
               <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                <span className="text-sm font-bold text-gray-900">
-                  ₼{book.price}
-                </span>
-                <span className="text-[10px] text-gray-400">
-                  Stok: {book.stock}
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-gray-400 line-through">
+                    ₼{book.price}
+                  </span>
+                  <span className="text-sm font-bold text-red-600">
+                    ₼{book.discountPrice}
+                  </span>
+                </div>
+                <span className="text-[10px] text-gray-400">{book.code}</span>
               </div>
             </div>
           </div>
@@ -202,8 +261,8 @@ export default function BooksPage() {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-y-auto max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
               <h2 className="font-bold text-gray-900">
                 {editingBook ? "Redaktə et" : "Yeni Kitab"}
               </h2>
@@ -214,110 +273,343 @@ export default function BooksPage() {
                 <X size={20} />
               </button>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="flex gap-4">
-                <div className="w-20 h-24 bg-gray-50 border rounded-lg relative overflow-hidden flex items-center justify-center">
-                  {formData.image ? (
-                    <img
-                      src={formData.image}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Upload size={20} className="text-gray-300" />
-                  )}
-                  {isUploading && (
-                    <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
-                      <Loader2
-                        className="animate-spin text-red-500"
-                        size={16}
+
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="w-32 h-44 bg-gray-50 border rounded-lg relative overflow-hidden flex items-center justify-center">
+                    {formData.image ? (
+                      <img
+                        src={formData.image}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Upload size={32} className="text-gray-300" />
+                    )}
+                    {isUploading && (
+                      <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+                        <Loader2
+                          className="animate-spin text-red-500"
+                          size={24}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-4">
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">
+                        Kitab Kodu
+                      </label>
+                      <input
+                        className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500"
+                        value={formData.code || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, code: e.target.value })
+                        }
                       />
                     </div>
-                  )}
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">
+                        Şəkil URL
+                      </label>
+                      <input
+                        className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500"
+                        value={formData.image || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, image: e.target.value })
+                        }
+                        placeholder="https://..."
+                      />
+                      <label className="mt-2 block w-full text-center py-1.5 border border-gray-200 rounded-lg text-xs font-bold cursor-pointer hover:bg-gray-50">
+                        Və ya fayl yüklə
+                        <input
+                          type="file"
+                          className="hidden"
+                          onChange={handleImageUpload}
+                        />
+                      </label>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 space-y-2">
-                  <input
-                    type="text"
-                    className="w-full text-xs p-2 border border-gray-200 rounded-lg outline-none focus:border-red-500"
-                    value={formData.image || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, image: e.target.value })
-                    }
-                    placeholder="Şəkil URL"
-                  />
-                  <label className="block w-full text-center py-1.5 border border-gray-200 rounded-lg text-xs font-bold cursor-pointer hover:bg-gray-50">
-                    Fayl yüklə
-                    <input
-                      type="file"
-                      className="hidden"
-                      onChange={handleImageUpload}
-                    />
+
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">
+                    Kitabın adı
                   </label>
+                  <input
+                    className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500"
+                    value={formData.title || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">
+                    Təsvir
+                  </label>
+                  <textarea
+                    rows={4}
+                    className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500"
+                    value={formData.description || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">
+                      Qiymət
+                    </label>
+                    <input
+                      type="number"
+                      className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500"
+                      value={formData.price}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          price: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">
+                      Endirimli Qiymət
+                    </label>
+                    <input
+                      type="number"
+                      className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500"
+                      value={formData.discountPrice}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          discountPrice: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
                 </div>
               </div>
-              <input
-                placeholder="Kitabın adı"
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500"
-                value={formData.title || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  placeholder="Müəllif"
-                  className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500"
-                  value={formData.author || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, author: e.target.value })
-                  }
-                />
-                <select
-                  className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none"
-                  value={formData.category || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                >
-                  <option value="">Kateqoriya</option>
-                  <option value="Bədii">Bədii</option>
-                  <option value="Roman">Roman</option>
-                  <option value="Elmi">Elmi</option>
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="number"
-                  placeholder="Qiymət"
-                  className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500"
-                  value={formData.price || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, price: e.target.value })
-                  }
-                />
-                <input
-                  type="number"
-                  placeholder="Stok"
-                  className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500"
-                  value={formData.stock || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, stock: e.target.value })
-                  }
-                />
+
+              {/* Right Side: Features */}
+              <div className="bg-gray-50 p-6 rounded-2xl space-y-4">
+                <h3 className="font-bold text-gray-900 border-b pb-2 text-sm uppercase tracking-wider">
+                  Texniki Özəlliklər
+                </h3>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">
+                      Müəllif
+                    </label>
+                    <input
+                      className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500 shadow-sm"
+                      value={formData.features.author}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          features: {
+                            ...formData.features,
+                            author: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">
+                      Nəşriyyat
+                    </label>
+                    <input
+                      className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500 shadow-sm"
+                      value={formData.features.publisher}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          features: {
+                            ...formData.features,
+                            publisher: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">
+                      Cild
+                    </label>
+                    <select
+                      className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none shadow-sm"
+                      value={formData.features.binding}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          features: {
+                            ...formData.features,
+                            binding: e.target.value,
+                          },
+                        })
+                      }
+                    >
+                      <option value="">Seçin</option>
+                      <option value="Sərt">Sərt</option>
+                      <option value="Yumşaq">Yumşaq</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">
+                      Dil
+                    </label>
+                    <input
+                      className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500 shadow-sm"
+                      value={formData.features.language}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          features: {
+                            ...formData.features,
+                            language: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">
+                      Səhifə Sayı
+                    </label>
+                    <input
+                      type="number"
+                      className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500 shadow-sm"
+                      value={formData.features.pageCount}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          features: {
+                            ...formData.features,
+                            pageCount: Number(e.target.value),
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase">
+                      Yaş
+                    </label>
+                    <input
+                      className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-red-500 shadow-sm"
+                      value={formData.features.age}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          features: {
+                            ...formData.features,
+                            age: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">
+                    Kateqoriya
+                  </label>
+                  <select
+                    className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none shadow-sm"
+                    value={formData.category || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, category: e.target.value })
+                    }
+                  >
+                    <option value="">Kateqoriya Seçin</option>
+                    <option value="Bədii ədəbiyyat">Bədii ədəbiyyat</option>
+                    <option value="Qeyri-bədii ədəbiyyat">
+                      Qeyri-bədii ədəbiyyat
+                    </option>
+                    <option value="Dedektiv">Dedektiv</option>
+                    <option value="Romanlar">Romanlar</option>
+                    <option value="Elmi">Elmi</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">
+                    Status
+                  </label>
+                  <select
+                    className="w-full p-2 border border-gray-200 rounded-lg text-sm outline-none shadow-sm"
+                    value={formData.status || "Aktiv"}
+                    onChange={(e) =>
+                      setFormData({ ...formData, status: e.target.value })
+                    }
+                  >
+                    <option value="Aktiv">Aktiv</option>
+                    <option value="Deaktiv">Deaktiv</option>
+                  </select>
+                </div>
               </div>
             </div>
-            <div className="px-6 py-4 bg-gray-50 flex justify-end gap-2">
+
+            <div className="px-6 py-4 bg-white border-t flex justify-end gap-2 sticky bottom-0 z-10">
               <button
                 onClick={closeModal}
-                className="px-4 py-2 text-sm text-gray-500"
+                className="px-6 py-2 text-sm text-gray-500 font-bold hover:text-gray-900"
               >
                 Ləğv et
               </button>
               <button
                 onClick={() => bookMutation.mutate(formData)}
-                className="bg-red-600 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-sm"
+                className="bg-red-600 text-white px-10 py-2 rounded-lg text-sm font-bold shadow-lg hover:bg-red-700 transition-all"
               >
                 Yadda saxla
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteConfirmationId && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-sm rounded-[24px] p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 mb-6 mx-auto">
+              <Trash2 size={32} />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 text-center mb-2">
+              Kitabı silmək?
+            </h2>
+            <p className="text-sm text-gray-500 text-center mb-8">
+              Bu əməliyyat geri qaytarıla bilməz. Kitab kataloqdan tamamilə
+              silinəcək.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setDeleteConfirmationId(null)}
+                className="px-4 py-3 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-colors"
+              >
+                Xeyr, ləğv et
+              </button>
+              <button
+                onClick={() => {
+                  deleteMutation.mutate(deleteConfirmationId);
+                  setDeleteConfirmationId(null);
+                }}
+                className="px-4 py-3 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-lg shadow-red-600/20 transition-all active:scale-95"
+              >
+                Bəli, sil
               </button>
             </div>
           </div>

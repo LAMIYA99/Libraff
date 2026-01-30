@@ -1,13 +1,23 @@
 export type Book = {
   id: string;
+  code: string;
   title: string;
-  author: string;
-  category: string;
   price: number;
-  stock: number;
-  status: string;
-  isbn?: string;
-  image?: string;
+  discountPrice: number;
+  image: string;
+  description: string;
+  category: string;
+  features: {
+    binding: string;
+    language: string;
+    author: string;
+    publisher: string;
+    pageCount: number;
+    age: string;
+  };
+  status?: string;
+  rating?: number;
+  numReviews?: number;
 };
 
 export type Order = {
@@ -37,4 +47,12 @@ export type PaginationButtonsProps = {
   prevIcon?: any;
   nextIcon?: any;
   pageCount?: string;
+};
+
+export type CartItem = {
+  id: number;
+  title: string;
+  image: string;
+  quantity: number;
+  price: number;
 };

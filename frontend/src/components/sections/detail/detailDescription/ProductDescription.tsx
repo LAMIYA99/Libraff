@@ -3,16 +3,22 @@ import { useState } from "react";
 import Description from "./Description";
 import Features from "./Features";
 import Reviews from "./Reviews";
+import { Book } from "@/types/global";
 
-export default function ProductDescription() {
+interface ProductDescriptionProps {
+  product: Book;
+}
+
+export default function ProductDescription({
+  product,
+}: ProductDescriptionProps) {
   const [activeTab, setActiveTab] = useState<"desc" | "features" | "reviews">(
     "desc",
   );
 
   return (
-    <div className="w-full  flex items-center justify-center flex-col mt-10">
-
-      <div className=" gap-[16rem] px-6 md:px-12 border-b-2 border-[#eee] w-full flex items-center justify-center text-[20.8px] md:text-[20.8px] font-medium">
+    <div className="w-full flex items-center justify-center flex-col mt-10">
+      <div className="gap-8 md:gap-24 lg:gap-[16rem] px-6 md:px-12 border-b-2 border-[#eee] w-full flex items-center justify-center text-[18px] md:text-[20.8px] font-medium">
         <button
           onClick={() => setActiveTab("desc")}
           className={`py-4 relative transition ${
@@ -51,7 +57,7 @@ export default function ProductDescription() {
         >
           İstifadəçi rəyləri
           <span className="bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-            5
+            {product.numReviews || 0}
           </span>
           {activeTab === "reviews" && (
             <span className="absolute left-0 bottom-0 h-[2px] w-full bg-red-500" />
@@ -59,10 +65,9 @@ export default function ProductDescription() {
         </button>
       </div>
 
-   
-      <div className="px-6 md:px-12  py-10 w-[100ch]">
-        {activeTab === "desc" && <Description />}
-        {activeTab === "features" && <Features />}
+      <div className="px-6 md:px-12 py-10 w-full max-w-4xl">
+        {activeTab === "desc" && <Description text={product.description} />}
+        {activeTab === "features" && <Features features={product.features} />}
         {activeTab === "reviews" && <Reviews />}
       </div>
     </div>

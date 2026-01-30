@@ -121,4 +121,10 @@
   body {
     @apply bg-background text-foreground;
   }
+  button {
+    @apply transition-all duration-300 cursor-pointer active:scale-95;
+  }
+  button:hover {
+    @apply opacity-90;
+  }
 }

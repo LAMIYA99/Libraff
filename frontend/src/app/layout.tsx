@@ -5,6 +5,8 @@ import { LoadingProvider } from "@/provider/LoadingProvider";
 import TanstackQueryProvider from "@/provider/TanstackQueryProvider";
 import { Toaster } from "react-hot-toast";
 
+import { CartProvider } from "@/context/CartContext";
+
 const NunitoFont = Nunito({
   variable: "--font-Nunito",
   subsets: ["latin"],
@@ -21,13 +23,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${NunitoFont.variable} antialiased`}>
         <TanstackQueryProvider>
-          <LoadingProvider>
-            {children}
-            <Toaster />
-          </LoadingProvider>
+          <CartProvider>
+            <LoadingProvider>
+              {children}
+              <Toaster />
+            </LoadingProvider>
+          </CartProvider>
         </TanstackQueryProvider>
       </body>
     </html>

@@ -12,14 +12,58 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import AccountDropdown from "@/components/features/AccountDropdown";
+import CartDropdown from "@/components/features/CartDropdown";
+import LoginModal from "@/components/features/LoginModal";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCart } from "@/context/CartContext";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const { isCartOpen, setIsCartOpen, cart: cartItems } = useCart();
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const accountRef = useRef<HTMLDivElement>(null);
+  const cartRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const query = searchParams.get("search");
+    if (query) setSearchQuery(query);
+  }, [searchParams]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      router.push("/shop");
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        accountRef.current &&
+        !accountRef.current.contains(event.target as Node)
+      ) {
+        setIsAccountOpen(false);
+      }
+      if (cartRef.current && !cartRef.current.contains(event.target as Node)) {
+        setIsCartOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header className="relative bg-white shadow-sm lg:shadow-none z-50">
       <div className="max-w-[1500px] mx-auto px-4 lg:px-[20px]">
+        {/* Mobile View */}
         <div className="lg:hidden flex flex-col pb-4 pt-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -42,53 +86,84 @@ const Header = () => {
                     fill
                     priority
                     className="object-contain"
+                    sizes="100px"
                   />
                 </Link>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Link href="/login" className="text-[#1e293b]">
+              <button
+                onClick={() => setIsLoginModalOpen(true)}
+                className="text-[#1e293b]"
+              >
                 <User className="w-6 h-6" />
-              </Link>
-              <button className="text-[#1e293b]">
+              </button>
+              <button
+                className="text-[#1e293b]"
+                onClick={() => setIsCartOpen(!isCartOpen)}
+              >
                 <ShoppingBag className="w-6 h-6" />
               </button>
             </div>
           </div>
 
-          <div className="relative border border-[#e2e8f0] bg-[#f8fafc] overflow-hidden w-full rounded-[22px]">
+          <form
+            onSubmit={handleSearch}
+            className="relative border border-[#e2e8f0] bg-[#f8fafc] overflow-hidden w-full rounded-[22px]"
+          >
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Növbəti kitabınızı axtarın"
               className="w-full h-[44px] px-[16px] pr-[44px] bg-transparent text-[15px] shadow-none outline-none font-nunito placeholder:text-gray-500 text-[#14151A]"
             />
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
-          </div>
+            <button
+              type="submit"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+          </form>
         </div>
 
+        {/* Desktop View */}
         <div className="hidden lg:grid grid-cols-12 items-center py-4">
           <div className="col-span-3 w-[175px] relative h-[120px]">
-            <Image
-              src="https://www.libraff.az/images/logos/1305/logo_b1x3-5c.png"
-              alt="logo"
-              fill
-              priority
-              className="object-contain"
-            />
+            <Link href="/">
+              <Image
+                src="https://www.libraff.az/images/logos/1305/logo_b1x3-5c.png"
+                alt="logo"
+                fill
+                priority
+                className="object-contain"
+                sizes="175px"
+              />
+            </Link>
           </div>
           <div className="col-span-6">
             <div className="flex items-center gap-[22px]">
               <button className="gap-1 font-nunito text-[16px] border-0 flex items-center justify-center h-[44px] min-w-[140px] px-[15px] rounded-full bg-[#ef3340] text-white text-base font-bold cursor-pointer transition-colors duration-150 hover:bg-[#d92c38]">
                 <Grid2x2 /> Kataloq
               </button>
-              <div className="relative border-2 border-[#cbd5e1] overflow-hidden w-full rounded-[22px]">
+              <form
+                onSubmit={handleSearch}
+                className="relative flex-1 border-2 border-[#cbd5e1] overflow-hidden rounded-[22px]"
+              >
                 <input
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Növbəti kitabınızı axtarın"
                   className="w-full h-[44px] px-[12px] pr-[44px] bg-transparent text-base overflow-hidden text-ellipsis shadow-[0_0_0_1px_#f2f2f5] outline-none font-nunito"
                 />
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-black" />
-              </div>
+                <button
+                  type="submit"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-black"
+                >
+                  <Search />
+                </button>
+              </form>
             </div>
           </div>
           <div className="col-span-3 flex items-center justify-end gap-4">
@@ -96,17 +171,54 @@ const Header = () => {
               AZ
               <ChevronDown className="w-4 h-4" />
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#F4F6FC] text-[#1e293b] font-bold text-md hover:text-[#ef3340] transition-colors">
-              <User className="w-4 h-4" />
-              Hesabım
-              <ChevronDown className="w-4 h-4" />
-            </button>
+            <div className="relative" ref={accountRef}>
+              <button
+                onClick={() => setIsAccountOpen(!isAccountOpen)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-md transition-all duration-200 ${
+                  isAccountOpen
+                    ? "bg-white shadow-sm ring-1 ring-gray-100"
+                    : "bg-[#F4F6FC] hover:bg-[#E8EDFB]"
+                } text-[#1e293b]`}
+              >
+                <User className="w-5 h-5 text-[#ef3340]" />
+                Hesabım
+                {isAccountOpen ? (
+                  <ChevronDown className="w-4 h-4 rotate-180 transition-transform" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 transition-transform" />
+                )}
+              </button>
+              {isAccountOpen && (
+                <AccountDropdown
+                  onOpenLogin={() => {
+                    setIsAccountOpen(false);
+                    setIsLoginModalOpen(true);
+                  }}
+                />
+              )}
+            </div>
             <button className="text-[#1e293b] hover:text-[#ef3340] transition-colors">
               <Heart className="w-6 h-6" />
             </button>
-            <button className="text-[#1e293b] hover:text-[#ef3340] transition-colors">
-              <ShoppingBag className="w-6 h-6" />
-            </button>
+            <div className="relative" ref={cartRef}>
+              <button
+                onClick={() => setIsCartOpen(!isCartOpen)}
+                className={`relative text-[#1e293b] hover:text-[#ef3340] transition-colors ${isCartOpen ? "text-[#ef3340]" : ""}`}
+              >
+                <ShoppingBag className="w-6 h-6" />
+                {cartItems.length > 0 && (
+                  <span className="absolute -top-1.5 -right-2 bg-[#ef3340] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">
+                    {cartItems.length}
+                  </span>
+                )}
+              </button>
+              {isCartOpen && (
+                <CartDropdown
+                  items={cartItems}
+                  onClose={() => setIsCartOpen(false)}
+                />
+              )}
+            </div>
           </div>
         </div>
 
@@ -208,14 +320,22 @@ const Header = () => {
               Əlaqə
             </Link>
           </div>
-          <Link
-            href="/login"
+          <button
+            onClick={() => {
+              setIsMenuOpen(false);
+              setIsLoginModalOpen(true);
+            }}
             className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-full bg-[#ef3340] text-white font-bold"
           >
             <User className="w-5 h-5" /> Daxil ol
-          </Link>
+          </button>
         </div>
       )}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onOpenRegister={() => router.push("/register")}
+      />
     </header>
   );
 };
