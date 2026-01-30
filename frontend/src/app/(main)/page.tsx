@@ -1,6 +1,5 @@
-import BookSwiper from "@/components/sections/homeBanner";
-import TodayChoicesSection from "@/components/sections/TodayChoicesSection";
-
+import HomeBanner from "@/components/sections/home/HomeBanner";
+import TodayChoicesSection from "@/components/sections/home/TodayChoicesSection";
 
 export default function Home() {
   return (
@@ -8,7 +7,6 @@ export default function Home() {
       <HomeBanner />
       <div className="max-w-375 mx-auto px-5 py-12 flex flex-col gap-12">
         <TodayChoicesSection />
-        
       </div>
     </div>
   );

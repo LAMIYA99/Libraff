@@ -43,7 +43,7 @@ const DetailView = () => {
             </li>
           </ul>
           <div className="flex items-start flex-col gap-1 py-[30px]">
-            <span className="text-[28px] font-nunito font-bold leading-[1] tracking-[-0.02em] text-[#0f172a]">
+            <span className="text-[28px] font-nunito font-bold leading-none tracking-[-0.02em] text-[#0f172a]">
               8.72₼
             </span>
             <div className="flex items-center gap-2">

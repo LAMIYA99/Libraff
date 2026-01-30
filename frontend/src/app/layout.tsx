@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
-import MainLayout from "@/components/layout/Main/MainLayout";
 import { LoadingProvider } from "@/provider/LoadingProvider";
+import TanstackQueryProvider from "@/provider/TanstackQueryProvider";
+import { Toaster } from "react-hot-toast";
 
 const NunitoFont = Nunito({
   variable: "--font-Nunito",
@@ -22,9 +23,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${NunitoFont.variable} antialiased`}>
-        <LoadingProvider>
-          <MainLayout>{children}</MainLayout>
-        </LoadingProvider>
+        <TanstackQueryProvider>
+          <LoadingProvider>
+            {children}
+            <Toaster />
+          </LoadingProvider>
+        </TanstackQueryProvider>
       </body>
     </html>
   );

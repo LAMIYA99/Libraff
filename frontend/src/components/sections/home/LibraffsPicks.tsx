@@ -4,7 +4,8 @@ import PicksCard from "@/components/shared/PicksCard";
 import { picksCardImages } from "@/constants";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
-import SectionHeading from "@/components/shared/SectionHeading";
+import SectionHeading from "@/components/shared/sectionHeading";
+
 
 const LibraffsPicks = () => {
   return (
