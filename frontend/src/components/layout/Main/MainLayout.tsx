@@ -1,4 +1,3 @@
-import { Outlet } from "@tanstack/react-router";
 import Footer from "./Footer";
 import Header from "./Header";
 import MobileBottomNav from "./MobileBottomNav";
