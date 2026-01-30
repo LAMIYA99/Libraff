@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 
 class AxiosServices {
-  private axiosInstance: AxiosInstance;
+  axiosInstance: AxiosInstance;
 
   constructor(baseURL: string) {
     this.axiosInstance = axios.create({
@@ -10,14 +10,14 @@ class AxiosServices {
     });
   }
 
-  async getAllData(url: string) {
-    try {
-      const res = await this.axiosInstance.get(url);
-      return res.data;
-    } catch (error: any) {
-      console.error("Error fetching data:", error.message);
-      throw error;
-    }
+  async getData(url: string): Promise<any> {
+    const res = await this.axiosInstance.get(url);
+    return res.data;
+  }
+
+  async PostData(url: string, payload: any): Promise<any> {
+    const res = await this.axiosInstance.post(url, payload);
+    return res.data;
   }
 }
 export default AxiosServices;

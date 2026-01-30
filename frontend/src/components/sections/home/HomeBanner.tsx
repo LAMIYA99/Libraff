@@ -1,18 +1,37 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
-
 import "swiper/css";
 import "swiper/css/pagination";
 import Image from "next/image";
 
-const books = [
+const desktopBooks = [
   "https://www.libraff.az/images/abt__ut2/banners/all/1319/Banner_Desktop_uz25-09.webp",
   "https://www.libraff.az/images/abt__ut2/banners/all/1305/banner_updated_aze_desktop.webp",
 ];
 
+const mobileBooks = [
+  "https://www.libraff.az/images/abt__ut2/banners/mobile/1319/Banner_Mobile__2__z1pn-ko.webp",
+  "https://www.libraff.az/images/abt__ut2/banners/mobile/1305/banner_updated_aze_mobile.webp",
+]; 
+
 export default function BookSwiper() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const books = isMobile ? mobileBooks : desktopBooks;
+
   return (
     <div className="relative pb-12">
       <Swiper
@@ -24,15 +43,16 @@ export default function BookSwiper() {
             "swiper-pagination-bullet-active !w-12 !h-2 !rounded-full !bg-gray-700",
         }}
         modules={[Pagination]}
-        className="mySwiper h-[300px] md:h-[500px] w-full"
+        className="mySwiper h-75 md:h-125 w-full"
       >
         {books.map((book, index) => (
-          <SwiperSlide key={index} className="w-full">
+          <SwiperSlide key={index} className="relative w-full">
             <Image
               src={book}
               alt={`Book ${index + 1}`}
               fill
-              className="w-full h-full object-contain"
+              className="object-contain"
+              priority={index === 0}
             />
           </SwiperSlide>
         ))}

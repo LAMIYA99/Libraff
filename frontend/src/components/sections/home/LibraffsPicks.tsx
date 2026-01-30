@@ -1,10 +1,10 @@
 "use client";
 
 import PicksCard from "@/components/shared/PicksCard";
-import SectionHeading from "@/components/shared/SectionHeading";
 import { picksCardImages } from "@/constants";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
+import SectionHeading from "@/components/shared/SectionHeading";
 
 const LibraffsPicks = () => {
   return (
