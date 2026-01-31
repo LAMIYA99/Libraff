@@ -10,11 +10,13 @@ import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import api from "@/services/api";
 import { useTranslations } from "next-intl";
+import { useAuth } from "@/context/AuthContext";
+import { Lock } from "lucide-react";
 
 const CheckoutPage = () => {
   const t = useTranslations("Checkout");
   const { cart, removeFromCart, clearCart } = useCart();
-  const [user, setUser] = useState<any>(null);
+  const { user, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -28,12 +30,8 @@ const CheckoutPage = () => {
     postalCode: Yup.string(),
   });
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem("libraff_user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-  }, []);
+  // authLoading check can be done in the return
+  // useEffect removed as we use useAuth now
 
   const subtotal = cart.reduce(
     (acc: number, item: any) => acc + item.price * item.quantity,
@@ -89,6 +87,37 @@ const CheckoutPage = () => {
     },
   });
 
+  if (authLoading) {
+    return (
+      <div className="max-w-[1500px] mx-auto px-4 py-20 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ef3340] mx-auto mb-4"></div>
+        <p className="text-gray-500">{t("processing")}</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="max-w-[1500px] mx-auto px-4 py-32 text-center animate-in fade-in zoom-in duration-500">
+        <div className="w-24 h-24 bg-red-50 rounded-3xl flex items-center justify-center text-[#ef3340] mx-auto mb-8 shadow-sm">
+          <Lock size={48} />
+        </div>
+        <h1 className="text-3xl font-bold mb-4 text-[#14151A]">
+          {t("please_login")}
+        </h1>
+        <p className="text-gray-500 mb-10 max-w-md mx-auto">
+          {t("order_desc")}
+        </p>
+        <button
+          onClick={() => router.push("?login=true")}
+          className="bg-[#ef3340] text-white px-10 py-4 rounded-full font-bold hover:bg-[#d92c38] transition-all shadow-[0_10px_20px_-5px_rgba(239,51,64,0.3)] active:scale-95"
+        >
+          {t("login_button")}
+        </button>
+      </div>
+    );
+  }
+
   if (cart.length === 0) {
     return (
       <div className="max-w-[1500px] mx-auto px-4 py-20 text-center">
@@ -106,15 +135,6 @@ const CheckoutPage = () => {
         <h1 className="text-[32px] font-bold text-[#14151A] mb-8">
           {t("checkout")}
         </h1>
-
-        {!user && (
-          <p className="text-[14px] text-gray-500 mb-10">
-            {t("have_account")}{" "}
-            <button className="text-[#ef3340] font-bold hover:underline">
-              {t("login")}
-            </button>
-          </p>
-        )}
 
         <div className="grid grid-cols-12 gap-8 items-start">
           <div className="col-span-12 lg:col-span-8 flex flex-col gap-10">

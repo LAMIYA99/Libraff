@@ -60,7 +60,12 @@ const Header = () => {
   useEffect(() => {
     const query = searchParams.get("search");
     if (query) setSearchQuery(query);
-  }, [searchParams]);
+
+    const showLogin = searchParams.get("login");
+    if (showLogin === "true" && !user) {
+      setIsLoginModalOpen(true);
+    }
+  }, [searchParams, user]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

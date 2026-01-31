@@ -4,9 +4,11 @@ import { CartItem } from "@/components/shared/Carditem";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { CircleCheckBig } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useRouter } from "@/i18n/routing";
 
 export default function CartPage() {
   const { cart, subtotal, clearCart } = useCart();
+  const router = useRouter();
   const isEmpty = cart.length === 0;
 
   return (
@@ -63,7 +65,7 @@ export default function CartPage() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-10 bg-gray-50 p-6 rounded-2xl">
             <div className="flex gap-4">
               <button
-                onClick={() => (window.location.href = "/shop")}
+                onClick={() => router.push("/shop")}
                 className="bg-black text-white px-6 py-3 rounded-full font-medium cursor-pointer"
               >
                 Alış-verişə davam et
@@ -77,7 +79,7 @@ export default function CartPage() {
             </div>
 
             <button
-              onClick={() => (window.location.href = "/checkout")}
+              onClick={() => router.push("/checkout")}
               className="bg-red-500 text-white cursor-pointer px-8 py-3 rounded-full font-semibold flex items-center gap-2"
             >
               <CircleCheckBig /> Sifarişi təsdiqlə

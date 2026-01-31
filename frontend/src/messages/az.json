@@ -87,6 +87,8 @@
     "cart_empty": "Səbət boşdur",
     "have_account": "Hesabınız var?",
     "login": "Daxil ol",
+    "please_login": "Sifarişi tamamlamaq üçün daxil olun",
+    "login_button": "Daxil ol / Qeydiyyat",
     "order_desc": "Sifarişin emalı və çatdırılması barədə məlumat:",
     "order_rule1": "Ölkədaxili sifarişlər təsdiqləndikdən sonra 24 saat ərzində çatdırılır.",
     "order_rule2": "30 AZN-dən yuxarı sifarişlər üçün çatdırılma pulsuzdur.",
