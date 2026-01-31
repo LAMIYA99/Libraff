@@ -2,10 +2,12 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
+import { useTranslations } from "next-intl";
 
 const CartContext = createContext<any>(null);
 
 export const CartProvider = ({ children }: any) => {
+  const t = useTranslations("Product");
   const [cart, setCart] = useState<any[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -15,7 +17,7 @@ export const CartProvider = ({ children }: any) => {
       try {
         setCart(JSON.parse(savedCart));
       } catch (e) {
-        console.error("Failed to parse cart", e);
+        console.error("cart parse error", e);
       }
     }
   }, []);
@@ -28,9 +30,9 @@ export const CartProvider = ({ children }: any) => {
     const existingItem = cart.find((item) => item.id === product.id);
 
     if (existingItem) {
-      toast.success("Məhsul sayı artırıldı");
+      toast.success(t("qty_updated"));
     } else {
-      toast.success("Səbətə əlavə edildi");
+      toast.success(t("added_to_cart"));
     }
 
     setCart((prevCart) => {

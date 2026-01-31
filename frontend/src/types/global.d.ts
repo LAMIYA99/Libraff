@@ -18,10 +18,17 @@ export type Book = {
   status?: string;
   rating?: number;
   numReviews?: number;
+  reviews?: {
+    name: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+  }[];
 };
 
 export type Order = {
-  id: string;
+  id?: string;
+  _id?: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -56,3 +63,15 @@ export type CartItem = {
   quantity: number;
   price: number;
 };
+
+export type User = {
+  id: string | number;
+  email: string;
+  role?: Role;
+  isAdmin?: boolean;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+};
+
+export type Role = "ADMIN" | "USER";

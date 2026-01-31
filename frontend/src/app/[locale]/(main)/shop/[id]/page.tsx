@@ -25,7 +25,7 @@ export default function ProductDetails() {
 
   return (
     <div className="max-w-[1500px] mx-auto px-4 lg:px-[20px] py-12">
-      <Breadcrumb />
+      <Breadcrumb title={product?.title} />
       <div className="mt-8">
         <DetailView product={product} />
       </div>

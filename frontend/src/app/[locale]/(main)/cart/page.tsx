@@ -76,7 +76,10 @@ export default function CartPage() {
               </button>
             </div>
 
-            <button className="bg-red-500 text-white cursor-pointer px-8 py-3 rounded-full font-semibold flex items-center gap-2">
+            <button
+              onClick={() => (window.location.href = "/checkout")}
+              className="bg-red-500 text-white cursor-pointer px-8 py-3 rounded-full font-semibold flex items-center gap-2"
+            >
               <CircleCheckBig /> Sifarişi təsdiqlə
             </button>
           </div>

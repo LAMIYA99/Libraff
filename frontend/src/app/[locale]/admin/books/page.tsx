@@ -396,7 +396,6 @@ export default function BooksPage() {
                 </div>
               </div>
 
-              {/* Right Side: Features */}
               <div className="bg-gray-50 p-6 rounded-2xl space-y-4">
                 <h3 className="font-bold text-gray-900 border-b pb-2 text-sm uppercase tracking-wider">
                   Texniki Özəlliklər

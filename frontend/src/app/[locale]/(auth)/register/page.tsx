@@ -1,10 +1,55 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { CheckCircle2, ChevronDown } from "lucide-react";
+import { Link, useRouter } from "@/i18n/routing";
+import { CheckCircle2 } from "lucide-react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import authService from "@/services/authService";
+import { toast } from "react-hot-toast";
+import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+
+const registerSchema = Yup.object().shape({
+  firstName: Yup.string().required("Ad mütləqdir"),
+  lastName: Yup.string().required("Soyad mütləqdir"),
+  email: Yup.string()
+    .email("Düzgün e-poçt ünvanı daxil edin")
+    .required("E-poçt mütləqdir"),
+  password: Yup.string()
+    .min(6, "Şifrə ən az 6 simvoldan ibarət olmalıdır")
+    .required("Şifrə mütləqdir"),
+});
 
 const RegisterPage = () => {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { login } = useAuth();
+
+  const formik = useFormik({
+    initialValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+    },
+    validationSchema: registerSchema,
+    onSubmit: async (values) => {
+      setIsLoading(true);
+      try {
+        const data = await authService.register(values);
+        login(data);
+        toast.success("Hesabınız yaradıldı!");
+        window.location.href = "/";
+      } catch (error: any) {
+        toast.error(error.response?.data?.message || "Xəta baş verdi");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+  });
+
   return (
     <div className="bg-white font-nunito px-4 py-8 lg:px-20 lg:py-12">
       <div className="mb-12">
@@ -21,22 +66,12 @@ const RegisterPage = () => {
       </div>
 
       <div className="max-w-[1400px] mx-auto grid lg:grid-cols-2 gap-16 items-start">
-        <div className="max-w-[400px]">
+        <div className="max-w-[500px] w-full">
           <h1 className="text-[32px] font-bold text-[#14151A] mb-8">
             Hesab yaradın
           </h1>
 
           <div className="flex flex-col gap-4 mb-8">
-            <button className="flex items-center justify-center gap-3 w-full py-3.5 border border-gray-300 rounded-full text-[15px] font-medium text-[#14151A] hover:bg-gray-50 transition-colors">
-              <svg
-                className="w-5 h-5 text-gray-600"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-4v-4H6v-2h4V7h4v4h4v2h-4v4z" />
-              </svg>
-              Loyallıq kartı ilə qeydiyyat
-            </button>
             <button className="flex items-center justify-center gap-3 w-full py-3.5 border border-gray-300 rounded-full text-[15px] font-medium text-[#14151A] hover:bg-gray-50 transition-colors">
               <img
                 src="https://www.google.com/favicon.ico"
@@ -57,26 +92,35 @@ const RegisterPage = () => {
             </span>
           </div>
 
-          <form className="flex flex-col gap-6">
-            <div className="flex flex-col gap-2">
-              <label className="text-[14px] font-bold text-[#14151A]">
-                Telefon <span className="text-[#ef3340]">*</span>
-              </label>
-              <div className="flex gap-2">
-                <div className="flex-1 flex border border-gray-200 rounded-[12px] bg-white overflow-hidden focus-within:border-[#ef3340] transition-colors">
-                  <div className="px-4 flex items-center text-gray-500 border-r border-gray-100 bg-gray-50">
-                    +994
-                  </div>
-                  <input
-                    type="tel"
-                    className="flex-1 px-4 py-3 outline-none text-[15px]"
-                    placeholder=" "
-                  />
-                </div>
-                <div className="flex items-center gap-2 px-3 border border-gray-200 rounded-[12px] cursor-pointer hover:bg-gray-50 transition-colors">
-                  <span className="text-[20px]">🇦🇿</span>
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
-                </div>
+          <form className="flex flex-col gap-6" onSubmit={formik.handleSubmit}>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-[14px] font-bold text-[#14151A]">
+                  Ad <span className="text-[#ef3340]">*</span>
+                </label>
+                <input
+                  name="firstName"
+                  type="text"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.values.firstName}
+                  className={`w-full border ${formik.touched.firstName && formik.errors.firstName ? "border-red-500" : "border-gray-200"} rounded-[12px] px-4 py-3 outline-none focus:border-[#ef3340] transition-colors`}
+                  placeholder=" "
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[14px] font-bold text-[#14151A]">
+                  Soyad <span className="text-[#ef3340]">*</span>
+                </label>
+                <input
+                  name="lastName"
+                  type="text"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.values.lastName}
+                  className={`w-full border ${formik.touched.lastName && formik.errors.lastName ? "border-red-500" : "border-gray-200"} rounded-[12px] px-4 py-3 outline-none focus:border-[#ef3340] transition-colors`}
+                  placeholder=" "
+                />
               </div>
             </div>
 
@@ -85,10 +129,19 @@ const RegisterPage = () => {
                 E-poçt <span className="text-[#ef3340]">*</span>
               </label>
               <input
+                name="email"
                 type="email"
-                className="w-full border border-gray-200 rounded-[12px] px-4 py-3 outline-none focus:border-[#ef3340] transition-colors"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.email}
+                className={`w-full border ${formik.touched.email && formik.errors.email ? "border-red-500" : "border-gray-200"} rounded-[12px] px-4 py-3 outline-none focus:border-[#ef3340] transition-colors`}
                 placeholder=" "
               />
+              {formik.touched.email && formik.errors.email && (
+                <span className="text-red-500 text-xs">
+                  {formik.errors.email}
+                </span>
+              )}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -96,26 +149,33 @@ const RegisterPage = () => {
                 Şifrə <span className="text-[#ef3340]">*</span>
               </label>
               <input
+                name="password"
                 type="password"
-                className="w-full border border-gray-200 rounded-[12px] px-4 py-3 outline-none focus:border-[#ef3340] transition-colors"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.password}
+                className={`w-full border ${formik.touched.password && formik.errors.password ? "border-red-500" : "border-gray-200"} rounded-[12px] px-4 py-3 outline-none focus:border-[#ef3340] transition-colors`}
                 placeholder=" "
               />
+              {formik.touched.password && formik.errors.password && (
+                <span className="text-red-500 text-xs">
+                  {formik.errors.password}
+                </span>
+              )}
             </div>
 
             <button
               type="submit"
-              className="w-full bg-[#ef3340] text-white py-4 rounded-full text-[16px] font-extrabold hover:bg-[#d92c38] transition-all hover:shadow-lg active:scale-[0.98] mt-2"
+              disabled={isLoading}
+              className="w-full bg-[#ef3340] text-white py-4 rounded-full text-[16px] font-extrabold hover:bg-[#d92c38] transition-all hover:shadow-lg active:scale-[0.98] mt-2 disabled:opacity-70"
             >
-              Qeydiyyat
+              {isLoading ? "Yüklənir..." : "Qeydiyyat"}
             </button>
           </form>
 
           <p className="mt-6 text-[14px] text-gray-600">
             Hesabınız var?{" "}
-            <Link
-              href="/login"
-              className="text-[#ef3340] hover:underline font-bold"
-            >
+            <Link href="/" className="text-[#ef3340] hover:underline font-bold">
               Daxil ol
             </Link>
           </p>

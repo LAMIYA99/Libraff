@@ -5,13 +5,17 @@ import Image from "next/image";
 import ProductDescription from "./detailDescription/ProductDescription";
 import { useCart } from "@/context/CartContext";
 import { Book } from "@/types/global";
+import { useWishlist } from "@/context/WishlistContext";
+import { useTranslations } from "next-intl";
 
 interface DetailViewProps {
   product: Book | null;
 }
 
 const DetailView = ({ product }: DetailViewProps) => {
+  const t = useTranslations("Product");
   const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   if (!product)
     return (
@@ -19,6 +23,9 @@ const DetailView = ({ product }: DetailViewProps) => {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ef3340]"></div>
       </div>
     );
+
+  const productId = (product.id || (product as any)._id).toString();
+  const isFavorite = isInWishlist(productId);
 
   const discount = product.discountPrice
     ? Math.round(
@@ -43,12 +50,16 @@ const DetailView = ({ product }: DetailViewProps) => {
         </div>
         <div className="col-span-1 md:col-span-5 flex flex-col pt-4">
           <div className="flex items-center gap-2 text-[#767676] text-[14px]">
-            <span className="font-bold">Kod:</span>
+            <span className="font-bold">{t("code")}:</span>
             <Copy
               size={14}
               className="cursor-pointer hover:text-[#ef3340] transition-colors"
             />
-            <span>{product.code}</span>
+            <span>
+              {(product as any).code ||
+                (product as any).id ||
+                (product as any)._id}
+            </span>
           </div>
 
           <h2 className="text-[32px] text-[#14151A] mt-6 font-bold leading-tight">
@@ -57,7 +68,7 @@ const DetailView = ({ product }: DetailViewProps) => {
 
           <div className="mt-2 group cursor-pointer inline-block">
             <span className="text-[#64748b] text-[16px] underline hover:text-[#ef3340] transition-colors">
-              Hektor Qarsiya{" "}
+              {product?.features?.author}
             </span>
           </div>
 
@@ -67,15 +78,17 @@ const DetailView = ({ product }: DetailViewProps) => {
                 <Star
                   key={s}
                   size={16}
-                  fill={s <= 4 ? "#ef3340" : "none"}
+                  fill={s <= (product.rating || 0) ? "#ef3340" : "none"}
                   color="#ef3340"
                 />
               ))}
-              <span className="text-[14px] text-gray-500 ml-1">4.6</span>
+              <span className="text-[14px] text-gray-500 ml-1">
+                {(product.rating || 0).toFixed(1)}
+              </span>
             </li>
             <li className="text-gray-400 text-[14px]">•</li>
             <li className="text-[#ef3340] text-[14px] font-medium cursor-pointer hover:underline">
-              Rəylər: 5
+              {t("reviews")}: {product.numReviews || 0}
             </li>
           </ul>
 
@@ -101,22 +114,26 @@ const DetailView = ({ product }: DetailViewProps) => {
             onClick={() => addToCart(product)}
             className="w-full py-4 bg-[#ef3340] text-white rounded-full font-bold flex items-center justify-center gap-2 mb-6 hover:bg-[#d92c38] transition-all active:scale-[0.98] shadow-lg shadow-red-500/20"
           >
-            <ShoppingBag size={20} /> Səbətə əlavə et
+            <ShoppingBag size={20} /> {t("add_to_cart")}
           </button>
 
           <div className="flex flex-col gap-6 text-[#64748b]">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-              <button className="flex items-center gap-2 hover:text-[#ef3340] transition-colors font-medium">
-                <Heart size={20} /> Seçilmişlər
+              <button
+                onClick={() => toggleWishlist(productId)}
+                className={`flex items-center gap-2 transition-colors font-medium ${isFavorite ? "text-[#ef3340]" : "hover:text-[#ef3340]"}`}
+              >
+                <Heart size={20} fill={isFavorite ? "#ef3340" : "none"} />{" "}
+           
               </button>
               <button className="flex items-center gap-2 hover:text-[#ef3340] transition-colors font-medium">
-                <MessageCircle size={20} /> Dəstək
+                <MessageCircle size={20} /> {t("support")}
               </button>
             </div>
 
             <div className="space-y-4">
               <h4 className="font-bold text-[#14151A] text-[18px]">
-                Çatdırılma haqqında
+                {t("shipping_info")}
               </h4>
               <ul className="space-y-4 text-[14px]">
                 <li className="flex items-start gap-3">
@@ -124,18 +141,21 @@ const DetailView = ({ product }: DetailViewProps) => {
                     <ShoppingBag size={16} />
                   </div>
                   <span>
-                    Mağazadan təhvil alma —{" "}
-                    <span className="font-bold text-[#14151A]">pulsuz</span>
+                    {t("pickup")} —{" "}
+                    <span className="font-bold text-[#14151A]">
+                      {t("free")}
+                    </span>
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center shrink-0">
-                    <ShoppingBag size={16} /> {/* Truck icon would be better */}
+                    <ShoppingBag size={16} />
                   </div>
                   <span>
-                    Kuryer ilə — operator təsdiqindən sonra 24 saat ərzində. 30
-                    AZN və yuxarı sifarişlərdə —{" "}
-                    <span className="font-bold text-[#14151A]">pulsuz</span>
+                    {t("courier")} — {t("courier_desc")} —{" "}
+                    <span className="font-bold text-[#14151A]">
+                      {t("free")}
+                    </span>
                   </span>
                 </li>
               </ul>

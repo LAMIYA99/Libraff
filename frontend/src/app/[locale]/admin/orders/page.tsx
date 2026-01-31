@@ -37,9 +37,9 @@ export default function OrdersPage() {
 
   const filtered = Array.isArray(orders)
     ? orders.filter((o: any) => {
-        const id = o._id || o.id;
+        const id = (o._id || o.id || "").toString();
         const isMatched =
-          o.customerName.toLowerCase().includes(search.toLowerCase()) ||
+          (o.customerName || "").toLowerCase().includes(search.toLowerCase()) ||
           id.toLowerCase().includes(search.toLowerCase());
         const isStatus = status === "Hamısı" || o.status === status;
         return isMatched && isStatus;
@@ -80,9 +80,9 @@ export default function OrdersPage() {
         >
           <option value="Hamısı">Bütün Statuslar</option>
           <option value="Qəbul edildi">Qəbul edildi</option>
-          <option value="Gəzitdə">Gəzitdə</option>
+          <option value="Yoldadır">Yoldadır</option>
           <option value="Tamamlandı">Tamamlandı</option>
-          <option value="İptal edildi">İptal edildi</option>
+          <option value="İmtina edildi">İmtina edildi</option>
         </select>
       </div>
 
@@ -128,12 +128,12 @@ export default function OrdersPage() {
                   </span>
                   <ChevronDown
                     size={18}
-                    className={`text-gray-400 transition-all ${openId === item.id ? "rotate-180" : ""}`}
+                    className={`text-gray-400 transition-all ${openId === itemId ? "rotate-180" : ""}`}
                   />
                 </div>
               </div>
 
-              {openId === item.id && (
+              {openId === itemId && (
                 <div className="p-6 border-t border-gray-50 bg-gray-50/50">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
                     <div className="space-y-1">
@@ -168,9 +168,9 @@ export default function OrdersPage() {
                     <div className="flex gap-2">
                       {[
                         "Qəbul edildi",
-                        "Gəzitdə",
+                        "Yoldadır",
                         "Tamamlandı",
-                        "İptal edildi",
+                        "İmtina edildi",
                       ].map((st) => (
                         <button
                           key={st}
@@ -203,7 +203,6 @@ export default function OrdersPage() {
         })}
       </div>
 
-      {/* Modern Delete Confirmation Modal */}
       {deleteConfirmationId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-sm rounded-[24px] p-8 shadow-2xl animate-in zoom-in-95 duration-200">

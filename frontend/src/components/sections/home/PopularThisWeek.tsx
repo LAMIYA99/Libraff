@@ -29,6 +29,8 @@ const PopularThisWeek = () => {
             title={book.title}
             price={book.price}
             discountPrice={book.discountPrice}
+            rating={book.rating}
+            numReviews={book.numReviews}
           />
         ))}
       </div>

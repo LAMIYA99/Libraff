@@ -2,19 +2,13 @@ const mongoose = require("mongoose");
 
 const reviewSchema = new mongoose.Schema(
   {
+    name: { type: String, required: true },
+    rating: { type: Number, required: true },
+    comment: { type: String, required: true },
     user: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
-    },
-    rating: {
-      type: Number,
-      required: true,
-      min: 0,
-      max: 5,
-    },
-    comment: {
-      type: String,
-      required: true,
+      ref: "User",
     },
   },
   {
@@ -24,34 +18,13 @@ const reviewSchema = new mongoose.Schema(
 
 const bookSchema = new mongoose.Schema(
   {
-    code: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    title: {
-      type: String,
-      required: true,
-    },
-    price: {
-      type: Number,
-      required: true,
-      default: 0.0,
-    },
-    discountPrice: {
-      type: Number,
-      default: 0.0,
-    },
-    image: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-    },
-    category: {
-      type: String,
-    },
+    code: { type: String, required: true, unique: true },
+    title: { type: String, required: true },
+    price: { type: Number, required: true },
+    discountPrice: { type: Number },
+    image: { type: String, required: true },
+    description: { type: String, required: true },
+    category: { type: String, required: true },
     features: {
       binding: { type: String },
       language: { type: String },
@@ -61,14 +34,8 @@ const bookSchema = new mongoose.Schema(
       age: { type: String },
     },
     reviews: [reviewSchema],
-    rating: {
-      type: Number,
-      default: 0,
-    },
-    numReviews: {
-      type: Number,
-      default: 0,
-    },
+    rating: { type: Number, required: true, default: 0 },
+    numReviews: { type: Number, required: true, default: 0 },
   },
   {
     timestamps: true,

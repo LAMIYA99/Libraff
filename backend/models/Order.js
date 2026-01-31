@@ -19,7 +19,7 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: true,
       default: "Qəbul edildi",
-      enum: ["Qəbul edildi", "Gəzitdə", "Tamamlandı", "İptal edildi"],
+      enum: ["Qəbul edildi", "Yoldadır", "Tamamlandı", "İmtina edildi"],
     },
   },
   {

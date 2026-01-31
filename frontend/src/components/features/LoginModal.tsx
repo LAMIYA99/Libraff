@@ -1,9 +1,13 @@
 "use client";
 
 import { X } from "lucide-react";
-
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import authService from "@/services/authService";
+import { toast } from "react-hot-toast";
+import { useAuth } from "@/context/AuthContext";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -11,18 +15,48 @@ interface LoginModalProps {
   onOpenRegister?: () => void;
 }
 
+const loginSchema = Yup.object().shape({
+  email: Yup.string()
+    .email("Düzgün e-poçt ünvanı daxil edin")
+    .required("E-poçt mütləqdir"),
+  password: Yup.string().required("Şifrə mütləqdir"),
+});
+
 const LoginModal = ({ isOpen, onClose, onOpenRegister }: LoginModalProps) => {
   const [isMounted, setIsMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    validationSchema: loginSchema,
+    onSubmit: async (values) => {
+      setIsLoading(true);
+      try {
+        const data = await authService.login(values);
+        login(data);
+        toast.success("Uğurla daxil oldunuz!");
+        onClose();
+        window.location.reload();
+      } catch (error: any) {
+        toast.error(error.response?.data?.message || "Xəta baş verdi");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+  });
+
   if (!isMounted || !isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-200 flex items-center justify-center">
-   
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300"
         onClick={onClose}
@@ -58,19 +92,30 @@ const LoginModal = ({ isOpen, onClose, onOpenRegister }: LoginModalProps) => {
             </span>
           </div>
 
-          <form
-            className="flex flex-col gap-6"
-            onSubmit={(e) => e.preventDefault()}
-          >
+          <form className="flex flex-col gap-6" onSubmit={formik.handleSubmit}>
             <div className="flex flex-col gap-2">
               <label className="text-[14px] font-bold text-[#14151A]">
                 E-poçt <span className="text-[#ef3340]">*</span>
               </label>
               <input
+                id="email"
+                name="email"
                 type="email"
-                className="w-full border border-gray-200 rounded-[12px] px-4 py-3.5 outline-none focus:border-[#ef3340] transition-colors text-[15px]"
-                placeholder=" "
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.email}
+                className={`w-full border ${
+                  formik.touched.email && formik.errors.email
+                    ? "border-red-500"
+                    : "border-gray-200"
+                } rounded-[12px] px-4 py-3.5 outline-none focus:border-[#ef3340] transition-colors text-[15px]`}
+                placeholder="nümunə@mail.com"
               />
+              {formik.touched.email && formik.errors.email && (
+                <span className="text-red-500 text-xs">
+                  {formik.errors.email}
+                </span>
+              )}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -86,17 +131,32 @@ const LoginModal = ({ isOpen, onClose, onOpenRegister }: LoginModalProps) => {
                 </Link>
               </div>
               <input
+                id="password"
+                name="password"
                 type="password"
-                className="w-full border border-gray-200 rounded-[12px] px-4 py-3.5 outline-none focus:border-[#ef3340] transition-colors text-[15px]"
-                placeholder=" "
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.password}
+                className={`w-full border ${
+                  formik.touched.password && formik.errors.password
+                    ? "border-red-500"
+                    : "border-gray-200"
+                } rounded-[12px] px-4 py-3.5 outline-none focus:border-[#ef3340] transition-colors text-[15px]`}
+                placeholder="••••••••"
               />
+              {formik.touched.password && formik.errors.password && (
+                <span className="text-red-500 text-xs">
+                  {formik.errors.password}
+                </span>
+              )}
             </div>
 
             <button
               type="submit"
-              className="w-full bg-[#ef3340] text-white py-4 mt-2 rounded-full text-[16px] font-extrabold shadow-[0_10px_20px_-5px_rgba(239,51,64,0.3)] hover:bg-[#d92c38] transition-all active:scale-[0.98]"
+              disabled={isLoading}
+              className="w-full bg-[#ef3340] text-white py-4 mt-2 rounded-full text-[16px] font-extrabold shadow-[0_10px_20px_-5px_rgba(239,51,64,0.3)] hover:bg-[#d92c38] transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Daxil ol
+              {isLoading ? "Yüklənir..." : "Daxil ol"}
             </button>
           </form>
 

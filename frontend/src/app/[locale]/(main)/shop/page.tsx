@@ -4,19 +4,39 @@ import Sidebar from "@/components/features/Sidebar";
 import BookCard from "@/components/shared/BookCard";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import PaginationButtons from "@/components/ui/PaginationButtons";
-import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Book } from "@/types/global";
 import api from "@/services/api";
 import { useSearchParams } from "next/navigation";
+import { LucideArrowLeft, LucideArrowRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const Shop = () => {
+  const t = useTranslations("Shop");
+  const tCommon = useTranslations("Common");
   const searchParams = useSearchParams();
   const search = searchParams.get("search") || "";
+  const category = searchParams.get("category") || "";
+  const language = searchParams.get("language") || "";
+  const minPrice = searchParams.get("minPrice") || "";
+  const maxPrice = searchParams.get("maxPrice") || "";
+  const inStock = searchParams.get("inStock") || "";
+  const sort = searchParams.get("sort") || "";
+  const limit = searchParams.get("limit") || "16";
+
+  const queryParams = new URLSearchParams();
+  if (search) queryParams.set("search", search);
+  if (category) queryParams.set("category", category);
+  if (language) queryParams.set("language", language);
+  if (minPrice) queryParams.set("minPrice", minPrice);
+  if (maxPrice) queryParams.set("maxPrice", maxPrice);
+  if (inStock) queryParams.set("inStock", inStock);
+  if (sort) queryParams.set("sort", sort);
+  if (limit) queryParams.set("limit", limit);
 
   const { data: books = [], isLoading } = useQuery<Book[]>({
-    queryKey: ["shop-books", search],
-    queryFn: () => api.get(`/books${search ? `?search=${search}` : ""}`),
+    queryKey: ["shop-books", queryParams.toString()],
+    queryFn: () => api.get(`/books?${queryParams.toString()}`),
   });
 
   if (isLoading)
@@ -36,11 +56,11 @@ const Shop = () => {
         <div className="col-span-12 lg:col-span-9">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-[#14151A]">
-              {search
-                ? `"${search}" üçün axtarış nəticələri`
-                : "Bütün kitablar"}
+              {search ? t("search_results", { query: search }) : t("all_books")}
             </h1>
-            <p className="text-gray-500 mt-1">{books.length} məhsul tapıldı</p>
+            <p className="text-gray-500 mt-1">
+              {t("items_found", { count: books.length })}
+            </p>
           </div>
 
           <ShopSorting />
@@ -55,17 +75,19 @@ const Shop = () => {
                   title={book.title}
                   price={book.price}
                   discountPrice={book.discountPrice}
+                  rating={book.rating}
+                  numReviews={book.numReviews}
                 />
               ))}
             </div>
           ) : (
             <div className="py-20 text-center border-2 border-dashed border-gray-100 rounded-3xl">
-              <p className="text-gray-500 text-lg">Heç bir kitab tapılmadı.</p>
+              <p className="text-gray-500 text-lg">{t("no_books")}</p>
               <button
                 onClick={() => (window.location.href = "/shop")}
                 className="mt-4 text-[#ef3340] font-bold hover:underline"
               >
-                Bütün kitablara bax
+                {t("view_all")}
               </button>
             </div>
           )}
@@ -73,8 +95,8 @@ const Shop = () => {
           {books.length > 0 && (
             <div className="flex items-center justify-between mt-10">
               <PaginationButtons
-                title="Geri"
-                prevIcon={<ArrowLeft size={15} />}
+                title={tCommon("back")}
+                prevIcon={<LucideArrowLeft size={15} />}
               />
               <div className="hidden sm:flex items-center justify-center gap-2">
                 <PaginationButtons pageCount="1" />
@@ -85,8 +107,8 @@ const Shop = () => {
                 <PaginationButtons pageCount="6" />
               </div>
               <PaginationButtons
-                title="İrəli"
-                nextIcon={<ArrowRight size={15} />}
+                title={tCommon("next")}
+                nextIcon={<LucideArrowRight size={15} />}
               />
             </div>
           )}

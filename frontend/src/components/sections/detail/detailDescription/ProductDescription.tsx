@@ -18,7 +18,7 @@ export default function ProductDescription({
 
   return (
     <div className="w-full flex items-center justify-center flex-col mt-10">
-      <div className="gap-8 md:gap-24 lg:gap-[16rem] px-6 md:px-12 border-b-2 border-[#eee] w-full flex items-center justify-center text-[18px] md:text-[20.8px] font-medium">
+      <div className="gap-8 md:gap-24 lg:gap-64 px-6 md:px-12 border-b-2 border-[#eee] w-full flex items-center justify-center text-[18px] md:text-[20.8px] font-medium">
         <button
           onClick={() => setActiveTab("desc")}
           className={`py-4 relative transition ${
@@ -68,7 +68,12 @@ export default function ProductDescription({
       <div className="px-6 md:px-12 py-10 w-full max-w-4xl">
         {activeTab === "desc" && <Description text={product.description} />}
         {activeTab === "features" && <Features features={product.features} />}
-        {activeTab === "reviews" && <Reviews />}
+        {activeTab === "reviews" && (
+          <Reviews
+            bookId={product.id || (product as any)._id}
+            reviews={product.reviews || []}
+          />
+        )}
       </div>
     </div>
   );
