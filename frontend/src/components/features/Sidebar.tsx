@@ -2,10 +2,10 @@
 
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 
-const LANGUAGES = ["AZE", "AZE/ENG", "AZE/RUS", "ENG", "RUS", "TUR"];
+const LANGUAGES = ["AZE", "RUS", "TUR"];
 
 export default function Sidebar() {
   const t = useTranslations("Sidebar");
@@ -17,13 +17,19 @@ export default function Sidebar() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [category, setCategory] = useState("");
+  const minPriceRef = useRef<HTMLInputElement>(null);
+  const maxPriceRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const langs = searchParams.get("language")?.split(",") || [];
     setSelectedLangs(langs.filter(Boolean));
     setInStock(searchParams.get("inStock") === "true");
-    setMinPrice(searchParams.get("minPrice") || "");
-    setMaxPrice(searchParams.get("maxPrice") || "");
+    if (document.activeElement !== minPriceRef.current) {
+      setMinPrice(searchParams.get("minPrice") || "");
+    }
+    if (document.activeElement !== maxPriceRef.current) {
+      setMaxPrice(searchParams.get("maxPrice") || "");
+    }
     setCategory(searchParams.get("category") || "");
   }, [searchParams]);
 
@@ -193,6 +199,7 @@ export default function Sidebar() {
           <div className="flex items-center gap-3">
             <div className="relative flex-1">
               <input
+                ref={minPriceRef}
                 type="number"
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
@@ -207,6 +214,7 @@ export default function Sidebar() {
             <span className="text-gray-300">—</span>
             <div className="relative flex-1">
               <input
+                ref={maxPriceRef}
                 type="number"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}

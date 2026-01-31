@@ -18,7 +18,6 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
     },
     isAdmin: {
       type: Boolean,
@@ -30,6 +29,8 @@ const userSchema = new mongoose.Schema(
         ref: "Book",
       },
     ],
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
   },
   {
     timestamps: true,

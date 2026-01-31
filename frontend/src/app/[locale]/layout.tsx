@@ -10,6 +10,7 @@ import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { AuthProvider } from "@/context/AuthContext";
+import { GoogleProvider } from "@/provider/GoogleProvider";
 
 const NunitoFont = Nunito({
   variable: "--font-Nunito",
@@ -37,14 +38,17 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={`${NunitoFont.variable} antialiased`}>
+      <body
+        className={`${NunitoFont.variable} antialiased`}
+        suppressHydrationWarning
+      >
         <NextIntlClientProvider messages={messages} locale={locale}>
           <TanstackQueryProvider>
             <CartProvider>
               <WishlistProvider>
                 <LoadingProvider>
                   <AuthProvider>
-                    {children}
+                    <GoogleProvider>{children}</GoogleProvider>
                     <Toaster />
                   </AuthProvider>
                 </LoadingProvider>

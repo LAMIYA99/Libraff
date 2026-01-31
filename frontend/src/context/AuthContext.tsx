@@ -27,18 +27,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const parsedUser = JSON.parse(savedUser);
 
-        setUser(parsedUser.user || parsedUser);
+        if (parsedUser) {
+          setUser(parsedUser.user || parsedUser);
+        }
       } catch (error) {
         console.error("Failed to parse user from localStorage", error);
         localStorage.removeItem("libraff_user");
       }
     }
     setLoading(false);
+
+    const handleStorageChange = () => {
+      const savedUser = localStorage.getItem("libraff_user");
+      if (savedUser) {
+        try {
+          const parsedUser = JSON.parse(savedUser);
+          if (parsedUser) {
+            setUser(parsedUser.user || parsedUser);
+          }
+        } catch (error) {}
+      } else {
+        setUser(null);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   const login = (userData: any) => {
-    localStorage.setItem("libraff_user", JSON.stringify(userData));
-    setUser(userData.user || userData);
+    if (userData) {
+      localStorage.setItem("libraff_user", JSON.stringify(userData));
+      setUser(userData.user || userData);
+      window.dispatchEvent(new Event("storage"));
+    }
   };
 
   const logout = () => {

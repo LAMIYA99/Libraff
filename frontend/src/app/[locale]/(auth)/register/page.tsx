@@ -6,9 +6,11 @@ import { CheckCircle2 } from "lucide-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import authService from "@/services/authService";
+import api from "@/services/api";
 import { toast } from "react-hot-toast";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const registerSchema = Yup.object().shape({
   firstName: Yup.string().required("Ad mütləqdir"),
@@ -26,6 +28,34 @@ const RegisterPage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const { login } = useAuth();
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setIsLoading(true);
+      try {
+        console.log("Google token received", tokenResponse.access_token);
+        const data = await api.post("/auth/google", {
+          token: tokenResponse.access_token,
+        });
+        console.log("Google login success", data);
+        login(data);
+        toast.success("Hesabınız yaradıldı!");
+        window.location.href = "/";
+      } catch (error: any) {
+        console.error("Google login error details:", error);
+        toast.error(
+          error.response?.data?.message ||
+            "Google ilə giriş baş tutmadı: " + error.message,
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    onError: (errorResponse) => {
+      console.error("Google login failed", errorResponse);
+      toast.error("Google ilə giriş ləğv edildi və ya xəta baş verdi");
+    },
+  });
 
   const formik = useFormik({
     initialValues: {
@@ -72,7 +102,10 @@ const RegisterPage = () => {
           </h1>
 
           <div className="flex flex-col gap-4 mb-8">
-            <button className="flex items-center justify-center gap-3 w-full py-3.5 border border-gray-300 rounded-full text-[15px] font-medium text-[#14151A] hover:bg-gray-50 transition-colors">
+            <button
+              onClick={() => handleGoogleLogin()}
+              className="flex items-center justify-center gap-3 w-full py-3.5 border border-gray-300 rounded-full text-[15px] font-medium text-[#14151A] hover:bg-gray-50 transition-colors"
+            >
               <img
                 src="https://www.google.com/favicon.ico"
                 alt="Google"

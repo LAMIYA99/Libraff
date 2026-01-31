@@ -11,11 +11,16 @@ class AxiosServices {
     this.axiosInstance.interceptors.request.use(
       (config: any) => {
         const stored = localStorage.getItem("libraff_user");
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          const token = parsed.accessToken || parsed.token;
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        if (stored && stored !== "undefined") {
+          try {
+            const parsed = JSON.parse(stored);
+            const token = parsed.accessToken || parsed.token;
+            if (token) {
+              config.headers.Authorization = `Bearer ${token}`;
+            }
+          } catch (e) {
+            console.error("Error parsing stored user data:", e);
+            localStorage.removeItem("libraff_user");
           }
         }
         return config;

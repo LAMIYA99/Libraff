@@ -6,8 +6,11 @@ import { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import authService from "@/services/authService";
+import api from "@/services/api";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
+import ForgotPasswordModal from "./ForgotPasswordModal";
+import { useGoogleLogin } from "@react-oauth/google";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -25,6 +28,7 @@ const loginSchema = Yup.object().shape({
 const LoginModal = ({ isOpen, onClose, onOpenRegister }: LoginModalProps) => {
   const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { login } = useAuth();
 
   useEffect(() => {
@@ -53,6 +57,36 @@ const LoginModal = ({ isOpen, onClose, onOpenRegister }: LoginModalProps) => {
     },
   });
 
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setIsLoading(true);
+      try {
+        console.log("Google token received", tokenResponse.access_token);
+        const data = await api.post("/auth/google", {
+          token: tokenResponse.access_token,
+        });
+        console.log("Google login success", data);
+        login(data);
+        toast.success("Uğurla daxil oldunuz!");
+        onClose();
+        window.location.reload();
+      } catch (error: any) {
+        console.error("Google login error details:", error);
+        toast.error(
+          error.response?.data?.message ||
+            "Google ilə giriş baş tutmadı. Xəta: " +
+              (error?.message || "Naməlum xəta"),
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    onError: (errorResponse) => {
+      console.error("Google login failed", errorResponse);
+      toast.error("Google ilə giriş ləğv edildi və ya xəta baş verdi");
+    },
+  });
+
   if (!isMounted || !isOpen) return null;
 
   return (
@@ -74,7 +108,10 @@ const LoginModal = ({ isOpen, onClose, onOpenRegister }: LoginModalProps) => {
         </div>
 
         <div className="p-10 flex flex-col pt-8">
-          <button className="flex items-center justify-center gap-3 w-full py-4 bg-[#F2F2F2] hover:bg-[#E8E8E8] rounded-full text-[15px] font-medium text-[#14151A] transition-colors mb-8">
+          <button
+            onClick={() => handleGoogleLogin()}
+            className="flex items-center justify-center gap-3 w-full py-4 bg-[#F2F2F2] hover:bg-[#E8E8E8] rounded-full text-[15px] font-medium text-[#14151A] transition-colors mb-8"
+          >
             <img
               src="https://www.google.com/favicon.ico"
               alt="Google"
@@ -123,12 +160,15 @@ const LoginModal = ({ isOpen, onClose, onOpenRegister }: LoginModalProps) => {
                 <label className="text-[14px] font-bold text-[#14151A]">
                   Şifrə <span className="text-[#ef3340]">*</span>
                 </label>
-                <Link
-                  href="#"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForgotPassword(true);
+                  }}
                   className="text-[13px] text-[#ef3340] hover:underline font-medium"
                 >
                   Şifrəni unutdum
-                </Link>
+                </button>
               </div>
               <input
                 id="password"
@@ -164,8 +204,11 @@ const LoginModal = ({ isOpen, onClose, onOpenRegister }: LoginModalProps) => {
             Hesabınız yoxdur?{" "}
             <button
               onClick={() => {
+                console.log("Register button clicked");
                 onClose();
-                onOpenRegister?.();
+                setTimeout(() => {
+                  onOpenRegister?.();
+                }, 100);
               }}
               className="text-[#ef3340] font-bold hover:underline"
             >
@@ -174,6 +217,11 @@ const LoginModal = ({ isOpen, onClose, onOpenRegister }: LoginModalProps) => {
           </div>
         </div>
       </div>
+
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+      />
     </div>
   );
 };

@@ -18,70 +18,70 @@ const categories = [
     id: 1,
     title: "Şəxsi İnkişaf",
     icon: Brain,
-    href: "/category/personal-development",
+    href: "/shop?category=Şəxsi%20İnkişaf",
     accent: "text-red-500",
   },
   {
     id: 2,
     title: "Psixologiya",
     icon: User,
-    href: "/category/psychology",
+    href: "/shop?category=Psixologiya",
     accent: "text-red-500",
   },
   {
     id: 3,
     title: "Klassiklər",
     icon: Feather,
-    href: "/category/classics",
+    href: "/shop?category=Klassiklər",
     accent: "text-red-500",
   },
   {
     id: 4,
     title: "Elmi-fantastika & Fantaziya",
     icon: Wand2,
-    href: "/category/sci-fi-fantasy",
+    href: "/shop?category=Elmi-fantastika%20%26%20Fantaziya",
     accent: "text-red-500",
   },
   {
     id: 5,
     title: "Detektiv",
     icon: Search,
-    href: "/category/detective",
+    href: "/shop?category=Detektiv",
     accent: "text-red-500",
   },
   {
     id: 6,
     title: "Bədii ədəbiyyat",
     icon: BookOpen,
-    href: "/category/fiction",
+    href: "/shop?category=Bədii%20ədəbiyyat",
     accent: "text-red-500",
   },
   {
     id: 7,
     title: "Romanlar & Novellalar",
     icon: BookCopy,
-    href: "/category/novels",
+    href: "/shop?category=Romanlar%20%26%20Novellalar",
     accent: "text-red-500",
   },
   {
     id: 8,
     title: "Endirimlər",
     icon: Percent,
-    href: "/category/discounts",
+    href: "/shop?sort=price-low",
     accent: "text-red-500",
   },
   {
     id: 9,
     title: "Bədii uşaq ədəbiyyatı",
     icon: Castle,
-    href: "/category/kids-fiction",
+    href: "/shop?category=Bədii%20uşaq%20ədəbiyyatı",
     accent: "text-red-500",
   },
   {
     id: 10,
     title: "Qeyri-bədii uşaq ədəbiyyatı",
     icon: Rocket,
-    href: "/category/kids-nonfiction",
+    href: "/shop?category=Qeyri-bədii%20uşaq%20ədəbiyyatı",
     accent: "text-red-500",
   },
 ];
@@ -94,7 +94,7 @@ const CategoriesSection = () => {
           Kateqoriyalar
         </h2>
         <Link
-          href="/categories"
+          href="/shop"
           className="text-gray-500 hover:text-[#14151A] transition-colors text-sm font-medium flex items-center gap-1"
         >
           Hamısına bax <span className="text-lg">→</span>

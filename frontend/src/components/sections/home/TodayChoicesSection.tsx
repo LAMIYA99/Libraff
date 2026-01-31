@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import LanguageFilter from "@/components/features/LanguageFilter";
 import BookCard from "@/components/shared/BookCard";
 import SectionHeading from "@/components/shared/sectionHeading";
@@ -9,15 +11,20 @@ import { Loader2 } from "lucide-react";
 import { Book } from "@/types/global";
 
 const TodayChoicesSection = () => {
+  const [activeLang, setActiveLang] = useState("AZE");
+
   const { data: books = [], isLoading } = useQuery<Book[]>({
-    queryKey: ["today-choices"],
-    queryFn: () => api.get("/books?limit=6"),
+    queryKey: ["today-choices", activeLang],
+    queryFn: () => api.get(`/books?language=${activeLang}`),
   });
 
   return (
     <div>
       <SectionHeading title="Bugünün seçimləri" />
-      <LanguageFilter />
+      <LanguageFilter
+        activeLang={activeLang}
+        onLanguageChange={setActiveLang}
+      />
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 min-h-[300px]">
         {isLoading ? (
           <div className="col-span-full flex items-center justify-center py-20">

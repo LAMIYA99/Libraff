@@ -42,6 +42,16 @@ const Header = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem("libraff_user");
+    if (storedUser && !user) {
+      try {
+      } catch (e) {
+        console.error("Header localstorage parse error", e);
+      }
+    }
+  }, [user]);
+
   const handleLogout = () => {
     logout();
     setIsAccountOpen(false);
@@ -102,7 +112,7 @@ const Header = () => {
                 )}
               </button>
               <div className="w-[100px] relative h-[30px]">
-                <Link href="/">
+                <Link href="/" className="relative block w-full h-full">
                   <Image
                     src="https://www.libraff.az/images/logos/1305/logo_b1x3-5c.png"
                     alt="logo"
@@ -155,7 +165,7 @@ const Header = () => {
 
         <div className="hidden lg:grid grid-cols-12 items-center py-4">
           <div className="col-span-3 w-[175px] relative h-[120px]">
-            <Link href="/">
+            <Link href="/" className="relative block w-full h-full">
               <Image
                 src="https://www.libraff.az/images/logos/1305/logo_b1x3-5c.png"
                 alt="logo"
